@@ -11,6 +11,9 @@ import time
 import timeit
 import cProfile
 
+import numpy as np
+from numpy import array_equiv as array_equiv
+from numpy.lib.function_base import copy
 from collections import deque
 
 # color escape sequences for xterm-256color bgs
@@ -71,20 +74,20 @@ class Cube:
         output = ""
         for i in range(self.size):
             output += " " * (self.size*4+2)
-            output += "".join(self.state[5][i])
+            output += np.array_str(self.state[5, i, :])
             output += "\n"
         for i in range(self.size):
-            output += "".join(self.state[4][i])
+            output += np.array_str(self.state[4, i, :])
             output += " "
-            output += "".join(self.state[1][i])
+            output += np.array_str(self.state[1, i, :])
             output += " "
-            output += "".join(self.state[2][i])
+            output += np.array_str(self.state[2, i, :])
             output += " "
-            output += "".join(self.state[3][i])
+            output += np.array_str(self.state[3, i, :])
             output += "\n"
         for i in range(self.size):
             output += " " * (self.size*4+2)
-            output += "".join(self.state[0][i])
+            output += np.array_str(self.state[0, i, :])
             output += "\n"
         print(output)
         
@@ -680,42 +683,44 @@ def main():
     for move in scramble_seq:
         root2.state = root2.state.execute_action(move)
 
-    #root.state.display_colors()
-        
-    # start_time = time.time()
-    # cross_path = idas(root, h_cross)
-    # print(" ".join(scramble_seq), '\n')
-    # end_time = time.time() - start_time
-    # print(end_time)
+    root.state.display_colors()
     
-    # for move in cross_path:
-    #     root.state = root.state.execute_action(move)
-    # print(" ".join(cross_path), "\n")
-    # root.state.display_colors()
+    # root.state = root.state.execute_action('R').execute_action("L'").execute_action("L'").execute_action("U")
     
-    # layer1_1_path = idas(root, h_layer1_1)
-    # for move in layer1_1_path:
-    #     root.state = root.state.execute_action(move)
-    # print(" ".join(layer1_1_path), "\n")
-    # root.state.display_colors()
+    start_time = time.time()
+    cross_path = idas(root, h_cross)
+    print(" ".join(scramble_seq), '\n')
+    end_time = time.time() - start_time
+    print(end_time)
     
-    # layer1_2_path = idas(root, h_layer1_2)
-    # for move in layer1_2_path:
-    #     root.state = root.state.execute_action(move)
-    # print(" ".join(layer1_2_path), "\n")    
-    # root.state.display_colors()
+    for move in cross_path:
+        root.state = root.state.execute_action(move)
+    print(" ".join(cross_path), "\n")
+    root.state.display_colors()
     
-    # layer1_3_path = idas(root, h_layer1_3)
-    # for move in layer1_3_path:
-    #     root.state = root.state.execute_action(move)
-    # print(" ".join(layer1_3_path), "\n")
-    # root.state.display_colors()
+    layer1_1_path = idas(root, h_layer1_1)
+    for move in layer1_1_path:
+        root.state = root.state.execute_action(move)
+    print(" ".join(layer1_1_path), "\n")
+    root.state.display_colors()
     
-    # layer1_4_path = idas(root, h_layer1_4)
-    # for move in layer1_4_path:
-    #     root.state = root.state.execute_action(move)
-    # print(" ".join(layer1_4_path), "\n")
-    # root.state.display_colors()
+    layer1_2_path = idas(root, h_layer1_2)
+    for move in layer1_2_path:
+        root.state = root.state.execute_action(move)
+    print(" ".join(layer1_2_path), "\n")    
+    root.state.display_colors()
+    
+    layer1_3_path = idas(root, h_layer1_3)
+    for move in layer1_3_path:
+        root.state = root.state.execute_action(move)
+    print(" ".join(layer1_3_path), "\n")
+    root.state.display_colors()
+    
+    layer1_4_path = idas(root, h_layer1_4)
+    for move in layer1_4_path:
+        root.state = root.state.execute_action(move)
+    print(" ".join(layer1_4_path), "\n")
+    root.state.display_colors()
     
     
     

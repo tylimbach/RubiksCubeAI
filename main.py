@@ -8,12 +8,20 @@ __author__ = "Tyler Limbach"
 from math import sqrt as sqrt
 import random
 import time
-import timeit
 import copy
-import cProfile
-import os
 
 from collections import deque
+import os
+import sys
+
+#random.seed(0)
+
+# set python hash seed to 0 so we can store state hashes in a file
+hashseed = os.getenv('PYTHONHASHSEED')
+if not hashseed:
+    os.environ['PYTHONHASHSEED'] = '0'
+    os.execv(sys.executable, [sys.executable] + sys.argv)
+    
 
 # color escape sequences for xterm-256color bgs
 O = "\033[48;5;208m  \033[0;0m"
@@ -229,6 +237,15 @@ class Cube:
         
         return Cube(new_state)
     
+    
+    def execute_action_sequence(self, actions):
+        new_state = copy.deepcopy(self.state)
+        cube = Cube(new_state)
+        for action in actions:
+            cube = cube.execute_action(action)
+        return cube
+    
+    
     def scramble(self):
         """performs a 25 move random scramble on the cube struct
         - scramble method is picking random moves and executing them
@@ -241,7 +258,7 @@ class Cube:
         """
         moves = ["U", "U'", "R", "R'", "L", "L'", "D", "D'", "F", "F'", "B", "B'"]
         move_sequence = []
-        move_sequence.append(random.choice(moves));
+        move_sequence.append(random.choice(moves))
         while len(move_sequence) < 25:
             move = random.choice(moves)
             is_previous_inverse = not (move_sequence[-1][0] != move[0] or len(move_sequence[-1]) == len(move))
@@ -808,7 +825,7 @@ def h_top_cross(node):
     #         ):
     #     h = h + 1
 
-    return h 
+    return h / 8
 
 
 def h_top_corners(node):
@@ -1063,6 +1080,10 @@ def h_top_edges_final(node):
     return h
 
 
+
+    
+
+
 #solved_state = string_to_state("W"+" W"*8+" G"*9+" O"*9+" B"*9 +" R"*9+" Y"*9)
 solved_state_ints = string_to_state('0'+' 0'*8+" 1"*9+" 2"*9+" 3"*9 +" 4"*9+" 5"*9)
 for i in range(6):
@@ -1073,33 +1094,19 @@ for i in range(6):
 
 def main():
     start_state = solved_state_ints
+    scramble_seq = []
     
     # gen root and set to start puzzle
     cube = Cube(start_state)
+    #cube = cube.execute_action_sequence("R R L' L' U U D' D' F F B' B'")
     root = Node(cube, None, None)
     root.state.display_colors()
-    
-    #cube2 = Cube(solved_state_ints)
-    #root2 = Node(cube2, None, None)
 
     # scramble puzzle
     root.state, scramble_seq = root.state.scramble()
-    #root.state = root.state.execute_action('L').execute_action('R')
-    
-    root_copy = copy.deepcopy(root)
-    
     print(" ".join(scramble_seq), '\n')
-    root.state.display_colors()
     
-    # 1 try alg
-    # start_time = time.time
-    # full_path = idas(root_copy, h_layer1_4)
-    # for move in full_path:
-    #     root_copy.state = root_copy.state.execute_action(move)
-    # end_time = time.time() - start_time
-    # print(end_time)
-    # print(" ".join(full_path), "\n")
-    # root_copy.state.display_colors()
+    root.state.display_colors()
     
     solve_sequence = []
     
@@ -1114,7 +1121,6 @@ def main():
     root.state.display_colors()
     solve_sequence.append(cross_path)
 
-    
     layer1_1_path = idas(root, h_layer1_1)
     for move in layer1_1_path:
         root.state = root.state.execute_action(move)

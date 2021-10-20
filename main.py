@@ -23,7 +23,7 @@ G = "\033[48;5;10m  \033[0;0m" # 2
 B = "\033[48;5;12m  \033[0;0m" # 21
 W = "\033[48;5;254m  \033[0;0m"
 
-
+# color of centers of cube
 
 def pick_color(char):
     if char == 'R' or char == 4:
@@ -283,7 +283,7 @@ class Node:
 
 def get_children(parent_node):
     children = []
-    actions = ["U", "U'", "R", "R'", "L", "L'", "D", "D'", "F", "F'", "B", "B'"]
+    actions = ["R", "R'", "U", "U'", "F", "F'", "L", "L'", "D", "D'", "B", "B'"]
     
     # this entire if block is pruning moves
     if parent_node.parent is not None:
@@ -649,7 +649,7 @@ def h_layer1_3(node):
         h = h + 2
     elif (bad_corners == 2):
         h = h + 1
-    return h * 2       
+    return h * 2
  
 
 def h_layer1_4(node):
@@ -721,7 +721,7 @@ def h_layer1_4(node):
     if state[1][1][0] == state[4][1][1] and state[4][1][2] == state[1][1][1]:
         h = h + 2
     
-    return h * 2 
+    return h * 2
 
 
 def h_top_cross(node):
@@ -808,7 +808,7 @@ def h_top_cross(node):
     #         ):
     #     h = h + 1
 
-    return h / 8
+    return h 
 
 
 def h_top_corners(node):
@@ -883,7 +883,7 @@ def h_top_corners(node):
     if (state[5][2][0] != top):
         h = h + 1
 
-    return h / 8
+    return h
 
 
 def h_top_corners_final(node):
@@ -926,7 +926,7 @@ def h_top_corners_final(node):
             or state[4][2][0] != left\
             #or state[3][1][2] != back or state[4][1][0] != left
             ):
-        h = h + 1
+        h = h + 4
         
     # middle edges
     if state[4][1][2] != left or state[1][1][0] != front:
@@ -972,7 +972,7 @@ def h_top_corners_final(node):
         or state[1][0][0] != front:
         h = h + 1
 
-    return h / 8
+    return h
 
 def h_top_edges_final(node):
     h = 0
@@ -1060,19 +1060,19 @@ def h_top_edges_final(node):
         or state[1][0][0] != front:
         h = h + 1
 
-    return h / 8
+    return h
 
 
-solved_state = string_to_state("W"+" W"*8+" G"*9+" O"*9+" B"*9 +" R"*9+" Y"*9)
-# solved_state_ints = string_to_state('0'+' 0'*8+" 1"*9+" 2"*9+" 3"*9 +" 4"*9+" 5"*9)
-# for i in range(6):
-#     for j in range(3):
-#         for k in range(3):
-#             solved_state_ints[i,j,k] = int(solved_state_ints[i,j,k])
+#solved_state = string_to_state("W"+" W"*8+" G"*9+" O"*9+" B"*9 +" R"*9+" Y"*9)
+solved_state_ints = string_to_state('0'+' 0'*8+" 1"*9+" 2"*9+" 3"*9 +" 4"*9+" 5"*9)
+for i in range(6):
+    for j in range(3):
+        for k in range(3):
+            solved_state_ints[i][j][k] = int(solved_state_ints[i][j][k])
 
 
 def main():
-    start_state = solved_state
+    start_state = solved_state_ints
     
     # gen root and set to start puzzle
     cube = Cube(start_state)

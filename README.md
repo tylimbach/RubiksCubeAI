@@ -27,7 +27,7 @@ Here is a quick cheat sheet from J Perm's website:
 
 The above moves are the normal moves in the clockwise direction. You can reverse the direction of any move by appending a single quote ' to the letter. Reversed, or inverse moves, are counter-clockwise. Appending a 2 to the move just means do it twice in a row.
 
-We provide simulation for all official moves: quarter and half face turns, slice turns, two layer (wide) turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
+The program provides simulation for all official moves: quarter and half face turns, slice turns, two layer (wide) turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
 
 ## Visualizing the Cube
 The cube state is primarily displayed use xterm-256 color escape sequences. It is unfolded from the front face. The front face in this case is green.

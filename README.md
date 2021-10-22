@@ -27,15 +27,12 @@ This project includes simulation for all quarter and half face turns, slice turn
 The cube state is primarily displayed use xterm-256 color escape sequences. Here is a solved vs scrambled cube.
 > Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
-<img src="https://user-images.githubusercontent.com/63261198/138527666-5df8c10e-657b-48c9-b4fc-6693206dede1.png" width="900" height="300">
-
-![image](https://user-images.githubusercontent.com/63261198/138527666-5df8c10e-657b-48c9-b4fc-6693206dede1.png)
-![image](https://user-images.githubusercontent.com/63261198/138527626-93872c77-0e4d-4970-beb2-7c18e56c8539.png)
+<img src="https://user-images.githubusercontent.com/63261198/138527666-5df8c10e-657b-48c9-b4fc-6693206dede1.png" width="400" height="125">
+<img src="https://user-images.githubusercontent.com/63261198/138527626-93872c77-0e4d-4970-beb2-7c18e56c8539.png" width="400" height="125">
 
 The alternative method to display the cube is using numbers rather than colors. Numbers represent 1-6 are their own colors.
 
-![image](https://user-images.githubusercontent.com/63261198/138527688-b586fcb1-effb-4cef-8ce4-321b00a14c7d.png)
-
+<img src="https://user-images.githubusercontent.com/63261198/138527688-b586fcb1-effb-4cef-8ce4-321b00a14c7d.png" width="400" height="125">
 
 ## Solving Algorithm
 The AI that solves the cube mimics the CFOP method that is used commonly in advanced speed-cubing. This method is a 4 step method represented by the name: Cross , F2L, OLL, PLL. 

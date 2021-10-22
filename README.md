@@ -24,14 +24,17 @@ This project uses official rubik's cube notation to represent the cube, this is 
 This project includes simulation for all quarter and half face turns, slice turns, double layer turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
 
 ## Visualizing the Cube
-The cube state is primarily displayed use xterm-256 color escape sequences.
+The cube state is primarily displayed use xterm-256 color escape sequences. Here is a solved vs scrambled cube.
 > Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
 ![image](https://user-images.githubusercontent.com/63261198/138524649-976182d5-813b-4234-b278-b9c19a7a3407.png)
 
-The alternative method to display the cube is using text representation. Numbers represent colors 1-6.
+![image](https://user-images.githubusercontent.com/63261198/138527351-1f93b342-7b4f-4aee-a7c3-f49484501364.png)
+
+The alternative method to display the cube is using numbers rather than colors. Numbers represent 1-6 are their own colors.
 
 ![image](https://user-images.githubusercontent.com/63261198/138525241-f13d6d54-7f2e-4a51-935b-14155a6eded6.png)
+
 
 ## Solving Algorithm
 The AI that solves the cube mimics the CFOP method that is used commonly in advanced speed-cubing. This method is a 4 step method represented by the name: Cross , F2L, OLL, PLL. 

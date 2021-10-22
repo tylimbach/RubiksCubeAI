@@ -51,6 +51,7 @@ Algorithms are read from pll.txt
 
 ## Roadmap
 
+- [ ] Add a menu loop
 - [ ] Add a GUI
 - [ ] Add a changelog
 - [ ] Improve search heuristics

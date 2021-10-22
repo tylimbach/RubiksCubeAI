@@ -3,7 +3,7 @@
 Rubiks Cube is a project that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
 
 - Creation of a solved 3x3
-- Perform turns or rotations
+- Simulate turns or rotations
 - Execution of random 25 move scrambles
 - Display the cube state as a 2D unfolded cube in terminal (with colors)
 - Solve the cube using the most popular speedsolving method for humans: CFOP
@@ -25,6 +25,12 @@ This project uses official rubik's cube notation to represent the cube, this is 
 https://ruwix.com/the-rubiks-cube/notation/advanced/
 
 This project includes simulation for all quarter and half face turns, slice turns, double layer turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
+
+## Visualizing the Cube
+The cube state is primarily displayed use xterm-256 color escape sequences.
+> Note: This is not compatible with all computer terminals, only terminals that support xterm-256
+
+![Alt text](/images/solved_display.jpg?raw=true)
 
 ## Solving Algorithm
 The AI that solves the cube mimics the CFOP method that is used commonly in advanced speed-cubing. This method is a 4 step method represented by the name: Cross , F2L, OLL, PLL. 

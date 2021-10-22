@@ -54,5 +54,5 @@ Algorithms are read from pll.txt
 - [ ] Add a menu loop
 - [ ] Add a GUI
 - [ ] Add a changelog
-- [ ] Improve search heuristics
+- [ ] Improve F2L search heuristics
 - [ ] Improve code documentation

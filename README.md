@@ -25,7 +25,7 @@ Here is a quick cheat sheet from J Perm's website:
 
 <img src="https://jperm.net/images/notation.png" width="700" height="500">
 
-The above moves are the normal moves in the clockwise direction. You can reverse the direction of any move by appending a single quote ' to the letter. Reversed, or inverse moves, are counter-clockwise.
+The above moves are the normal moves in the clockwise direction. You can reverse the direction of any move by appending a single quote ' to the letter. Reversed, or inverse moves, are counter-clockwise. Appending a 2 to the move just means do it twice in a row.
 
 We provide simulation for all official moves: quarter and half face turns, slice turns, two layer (wide) turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
 

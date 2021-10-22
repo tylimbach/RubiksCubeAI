@@ -1,5 +1,4 @@
 # Rubiks Cube
-
 Rubiks Cube is a terminal application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
 
 - Creation of a solved 3x3
@@ -9,11 +8,9 @@ Rubiks Cube is a terminal application that simulates a 3x3 rubik's cube written 
 - Solve the cube using the most popular speedsolving method for humans: CFOP
 
 ## Installation
+You must have Python 3 installed. The project was tested on Python 3.9.
 
-Download or clone the repository.
-Requires Python 3 (tested on Python 3.9).
-
-Run from within the rubiks-cube folder.
+Download the repository folder on github. Navigate to the project folder and run main.py from the command line.
 
 ```
 python3 main.py
@@ -22,7 +19,7 @@ python3 main.py
 ## 3x3 Notation
 This project uses official rubik's cube notation to represent the cube, this is especially important to understand for turns and rotations. A detailed notation guide can be found here for reference:
 
-https://ruwix.com/the-rubiks-cube/notation/advanced/
+[https://jperm.net/3x3/moves](JPerm's Notation Guide)
 
 This project includes simulation for all quarter and half face turns, slice turns, double layer turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
 
@@ -59,8 +56,10 @@ Brute force testing of 21 possible algorithms which cover all possible OLL cases
 
 Algorithms are read from pll.txt
 
-## Roadmap
+## Known Issues
+- PLL can fail rarely: Fix in progress
 
+## Roadmap
 - [ ] Add a menu loop
 - [ ] Add a GUI
 - [ ] Add a changelog

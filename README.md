@@ -19,7 +19,7 @@ python3 main.py
 ## 3x3 Notation
 This project uses official rubik's cube notation to represent the cube, this is especially important to understand for turns and rotations. A detailed notation guide can be found here for reference:
 
-[JPerm's Notation Guide](https://jperm.net/3x3/moves)
+[J Perm's Notation Guide](https://jperm.net/3x3/moves)
 
 Here is a quick cheat sheet from J Perm's website:
 

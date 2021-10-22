@@ -1,7 +1,7 @@
 # Rubiks Cube Solver
-Rubiks Cube is a terminal application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
+Rubiks Cube Solver is a terminal application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
 
-- Creation of a solved 3x3
+- Creation of a solved 3x3 cube
 - Simulate turns or rotations
 - Execution of random 25 move scrambles
 - Display the cube state as a 2D unfolded cube in terminal (with colors)

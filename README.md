@@ -24,10 +24,12 @@ This project uses official rubik's cube notation to represent the cube, this is 
 This project includes simulation for all quarter and half face turns, slice turns, double layer turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
 
 ## Visualizing the Cube
-The cube state is primarily displayed use xterm-256 color escape sequences. Here is a solved vs scrambled cube.
+The cube state is primarily displayed use xterm-256 color escape sequences.
 > Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
-<img src="https://user-images.githubusercontent.com/63261198/138527666-5df8c10e-657b-48c9-b4fc-6693206dede1.png" width="400" height="125">
+This cube is solved:
+<img src="https://user-images.githubusercontent.com/63261198/138527666-5df8c10e-657b-48c9-b4fc-6693206dede1.png" width="350" height="125">
+This cube is scrambled with the provided sequence:
 <img src="https://user-images.githubusercontent.com/63261198/138527626-93872c77-0e4d-4970-beb2-7c18e56c8539.png" width="400" height="125">
 
 The alternative method to display the cube is using numbers rather than colors. Numbers represent 1-6 are their own colors.

@@ -60,7 +60,7 @@ Brute force testing of 57 possible algorithms which cover all possible OLL cases
 Algorithms are read from oll.txt
 
 #### PLL (Permutation of Last Layer)
-Brute force testing of 21 possible algorithms which cover all possible OLL cases. This can require additional U turns to set up the algorithm, as well as additional U turns after the algorithm to align the last layer with the other two layers. A 22nd algorithm is included, to cover any case when the layers are misaligned and just require U turns. 
+Brute force testing of 21 possible algorithms which cover all possible OLL cases. This can require additional U turns to set up the algorithm, as well as additional U turns after the algorithm to align the last layer with the other two layers. A 22nd algorithm is included, to cover any case when the layers are only misaligned and just require U turns. 
 
 Algorithms are read from pll.txt
 

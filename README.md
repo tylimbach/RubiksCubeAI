@@ -29,7 +29,7 @@ The cube state is primarily displayed use xterm-256 color escape sequences.
 
 ![image](https://user-images.githubusercontent.com/63261198/138524649-976182d5-813b-4234-b278-b9c19a7a3407.png)
 
-The alternative method to display the cube is using text representation. Currently that uses numbers, but may be converted to colors in the future. It
+The alternative method to display the cube is using text representation. Numbers represent colors 1-6.
 
 ![image](https://user-images.githubusercontent.com/63261198/138525241-f13d6d54-7f2e-4a51-935b-14155a6eded6.png)
 

@@ -30,7 +30,7 @@ You can reverse any of the moves by appended a single quote ' to the letter.
 We provide simulation for all official moves: quarter and half face turns, slice turns, two layer (wide) turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
 
 ## Visualizing the Cube
-The cube state is primarily displayed use xterm-256 color escape sequences. It is unfolded from the front face. The front face here is green.
+The cube state is primarily displayed use xterm-256 color escape sequences. It is unfolded from the front face. The front face in this case is green.
 > Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
 Here is a solved cube:

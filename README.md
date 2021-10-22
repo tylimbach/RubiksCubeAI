@@ -1,6 +1,6 @@
 # Rubiks Cube
 
-Rubiks Cube is a project that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
+Rubiks Cube is a terminal application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
 
 - Creation of a solved 3x3
 - Simulate turns or rotations
@@ -34,7 +34,7 @@ The cube state is primarily displayed use xterm-256 color escape sequences.
 
 The alternative method to display the cube is using text representation. Currently that uses numbers, but may be converted to colors in the future. It
 
-![image](https://user-images.githubusercontent.com/63261198/138524922-612f4db6-55a7-443c-b808-a15ad12fcf34.png)
+![image](https://user-images.githubusercontent.com/63261198/138525241-f13d6d54-7f2e-4a51-935b-14155a6eded6.png)
 
 ## Solving Algorithm
 The AI that solves the cube mimics the CFOP method that is used commonly in advanced speed-cubing. This method is a 4 step method represented by the name: Cross , F2L, OLL, PLL. 

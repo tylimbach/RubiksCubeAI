@@ -8,44 +8,33 @@ __author__ = "Tyler Limbach"
 from math import sqrt as sqrt
 import random
 import time
-import copy
-
 from collections import deque
+
+import cProfile
+import pstats
+from pstats import SortKey
+
 import os
 import sys
 
 #random.seed(0)
 
-# set python hash seed to 0 so we can store state hashes in a file
+# set python hash seed to 0 so hashes are consistent across runs
 hashseed = os.getenv('PYTHONHASHSEED')
 if not hashseed:
     os.environ['PYTHONHASHSEED'] = '0'
     os.execv(sys.executable, [sys.executable] + sys.argv)
     
-
 # color escape sequences for xterm-256color bgs
-O = "\033[48;5;208m  \033[0;0m"
-Y = "\033[48;5;11m  \033[0;0m"
-R = "\033[48;5;9m  \033[0;0m" # 1
-G = "\033[48;5;10m  \033[0;0m" # 2
-B = "\033[48;5;12m  \033[0;0m" # 21
-W = "\033[48;5;254m  \033[0;0m"
+ORANGE_BG = "\033[48;5;208m  \033[0;0m"
+YELLOW_BG = "\033[48;5;11m  \033[0;0m"
+RED_BG = "\033[48;5;9m  \033[0;0m" # 1
+GREEN_BG = "\033[48;5;10m  \033[0;0m" # 2
+BLUE_BG = "\033[48;5;12m  \033[0;0m" # 21
+WHITE_BG = "\033[48;5;254m  \033[0;0m"
 
-# color of centers of cube
-
-def pick_color(char):
-    if char == 'R' or char == 4:
-        return R
-    elif char == 'G' or char == 1:
-        return G
-    elif char == 'B' or char == 3:
-        return B
-    elif char == 'Y' or char == 5:
-        return Y
-    elif char == 'O' or char == 2:
-        return O
-    elif char == 'W' or char == 0:
-        return W
+# ACTIONS will be used a dictionary to quickly determine moves from strings
+ACTIONS = {}
 
 class Cube:
     def __init__(self, state):
@@ -140,20 +129,36 @@ class Cube:
 
         Args:
             move (string): a string representing the face to turn 
-                and the direction to turn. only 1 letter if clockwise.
-                counterclockwise represented by a letter follow by a single quote '
+                and the direction to turn:
                 
-                example: 
+                only 1 letter if clockwise.
+                counterclockwise represented by a letter follow by a single quote '
+                double turn is letter followed by a 2
+                lower case letter is an outer layer + middle layer turned together
+                lowercase x, y or z is a rotation about that axis
+                
+                - 12 normal moves (outer layer turns)
+                - 6 center turns (middle layer turns)
+                - 9 double turns (same consecutive move twice, 3 center 6 normal)
+                - 12 joined turns (outer + middle layer together)
+                - 6 rotations
+                
+                README contains detailed turn notation information
+                
+                examples: 
                     R -> clockwise turn of right face
                     U' -> counterclockwise turn of up face
+                    M2 -> 2x turn of middle column on front face twice (direction doesn't matter)
+                    d -> clockwise turn of down face + middle front row (same as 2 moves: D E)
+                    x' -> counterclockwise rotation about x axis (turn the whole cube like an R' move)
 
         Returns:
             Cube: the new cube after the turn
         """
-        new_state = copy.deepcopy(self.state)
-        
+        new_state = deepcopy(self.state)        
         max_idx = self.size - 1
         
+        # outer moves
         if move == "R":
             new_state[2] = rot90(new_state[2])
             for i in range(self.size):
@@ -233,13 +238,192 @@ class Cube:
                 new_state[5][0][i], new_state[2][i][max_idx], new_state[0][max_idx][i], new_state[4][i][0] = \
                     new_state[4][max_idx - i][0], new_state[5][0][i], new_state[2][max_idx - i][max_idx], new_state[0][max_idx][i]
             new_state[5][0][max_idx] = displacedL
-            new_state[0][max_idx][max_idx] = displacedR            
+            new_state[0][max_idx][max_idx] = displacedR     
+            
+        # center moves
+        elif move == "M":
+            for i in range(self.size):
+                new_state[1][i][max_idx - 1], new_state[0][i][max_idx - 1], \
+                    new_state[3][max_idx - i][1], new_state[5][i][max_idx - 1] = \
+                    new_state[5][i][max_idx - 1], new_state[1][i][max_idx - 1], \
+                    new_state[0][i][max_idx - 1], new_state[3][max_idx - i][1]        
+        elif move == "M'":
+            for i in range(self.size):
+                new_state[5][i][max_idx - 1], new_state[1][i][max_idx - 1], \
+                    new_state[0][i][max_idx - 1], new_state[3][max_idx - i][1] = \
+                    new_state[1][i][max_idx - 1], new_state[0][i][max_idx - 1], \
+                    new_state[3][max_idx - i][1], new_state[5][i][max_idx - 1] 
+        elif move == "E":
+            for i in range(self.size):
+                new_state[1][max_idx - 1][i], new_state[2][max_idx - 1][i], new_state[3][max_idx - 1][i], new_state[4][max_idx - 1][i] = \
+                    new_state[4][max_idx - 1][i], new_state[1][max_idx - 1][i], new_state[2][max_idx - 1][i], new_state[3][max_idx - 1][i]     
+        elif move == "E'":
+            for i in range(self.size):
+                new_state[4][max_idx - 1][i], new_state[1][max_idx - 1][i], new_state[2][max_idx - 1][i], new_state[3][max_idx - 1][i] = \
+                    new_state[1][max_idx - 1][i], new_state[2][max_idx - 1][i], new_state[3][max_idx - 1][i], new_state[4][max_idx - 1][i]
+        elif move == "S":
+            displacedR = new_state[2][0][1]
+            displacedL = new_state[4][0][max_idx - 1]
+            for i in range(self.size):
+                new_state[5][max_idx - 1][i], new_state[2][i][1], new_state[0][1][i], new_state[4][i][max_idx - 1] = \
+                    new_state[4][max_idx - i][max_idx - 1], new_state[5][max_idx - 1][i], new_state[2][max_idx - i][1], new_state[0][1][i]
+            new_state[5][max_idx - 1][max_idx] = displacedL
+            new_state[0][1][max_idx] = displacedR
+        elif move == "S'":
+            displacedR = new_state[2][max_idx][1]
+            displacedL = new_state[4][max_idx][max_idx - 1]
+            for i in range(self.size):
+                new_state[4][max_idx - i][max_idx - 1], new_state[5][max_idx - 1][i], new_state[2][max_idx - i][1], new_state[0][1][i] = \
+                    new_state[5][max_idx - 1][i], new_state[2][i][1], new_state[0][1][i], new_state[4][i][max_idx - 1]
+            new_state[5][max_idx - 1][max_idx] = displacedR
+            new_state[0][1][max_idx] = displacedL
+        
+        # double moves
+        elif move == "R2":
+            cube = self.execute_action("R")
+            cube = cube.execute_action("R")
+            return cube
+        elif move == "L2":
+            cube = self.execute_action("L")
+            cube = cube.execute_action("L")
+            return cube
+        elif move == "U2":
+            cube = self.execute_action("U")
+            cube = cube.execute_action("U")
+            return cube
+        elif move == "D2":
+            cube = self.execute_action("D")
+            cube = cube.execute_action("D")
+            return cube
+        elif move == "F2":
+            cube = self.execute_action("F")
+            cube = cube.execute_action("F")
+            return cube
+        elif move == "B2":
+            cube = self.execute_action("B")
+            cube = cube.execute_action("B")
+            return cube
+        elif move == "M2":
+            cube = self.execute_action("M")
+            cube = cube.execute_action("M")
+            return cube
+        elif move == "E2":
+            cube = self.execute_action("E")
+            cube = cube.execute_action("E")
+            return cube
+        elif move == "S2":
+            cube = self.execute_action("S")
+            cube = cube.execute_action("S")
+            return cube
+        
+        # 2 layers move at sime time (center + outer)
+        elif move == "r":
+            cube = self.execute_action("R")
+            cube = cube.execute_action("M'")
+            return cube
+        elif move == "r'":
+            cube = self.execute_action("R'")
+            cube = cube.execute_action("M")
+            return cube
+        elif move == "l":
+            cube = self.execute_action("L")
+            cube = cube.execute_action("M")
+            return cube
+        elif move == "l'":
+            cube = self.execute_action("L'")
+            cube = cube.execute_action("M'")
+            return cube
+        elif move == "u":
+            cube = self.execute_action("U")
+            cube = cube.execute_action("E'")
+            return cube
+        elif move == "u'":
+            cube = self.execute_action("U'")
+            cube = cube.execute_action("E")
+            return cube
+        elif move == "d":
+            cube = self.execute_action("D")
+            cube = cube.execute_action("E")
+            return cube
+        elif move == "d'":
+            cube = self.execute_action("D'")
+            cube = cube.execute_action("E'")
+            return cube
+        elif move == "f":
+            cube = self.execute_action("F")
+            cube = cube.execute_action("S")
+            return cube
+        elif move == "f'":
+            cube = self.execute_action("F'")
+            cube = cube.execute_action("S'")
+            return cube
+        elif move == "b":
+            cube = self.execute_action("B")
+            cube = cube.execute_action("S'")
+            return cube
+        elif move == "b'":
+            cube = self.execute_action("B'")
+            cube = cube.execute_action("S")
+            return cube                     
+        
+        # double joint moves
+        elif move == "r2":
+            cube = self.execute_action("r")
+            cube = cube.execute_action("r")
+            return cube
+        elif move == "l2":
+            cube = self.execute_action("l")
+            cube = cube.execute_action("l")
+            return cube
+        elif move == "u2":
+            cube = self.execute_action("u")
+            cube = cube.execute_action("u")
+            return cube
+        elif move == "d2":
+            cube = self.execute_action("d")
+            cube = cube.execute_action("d")
+            return cube
+        elif move == "f2":
+            cube = self.execute_action("f")
+            cube = cube.execute_action("f")
+            return cube
+        elif move == "b2":
+            cube = self.execute_action("b")
+            cube = cube.execute_action("b")
+            return cube           
+        
+        # cube rotations
+        elif move == "x":
+            cube = self.execute_action("r")
+            cube = cube.execute_action("L'")
+            return cube
+        elif move == "x'":
+            cube = self.execute_action("r'")
+            cube = cube.execute_action("L")
+            return cube
+        elif move == "y":
+            cube = self.execute_action("u")
+            cube = cube.execute_action("D'")
+            return cube
+        elif move == "y'":
+            cube = self.execute_action("u'")
+            cube = cube.execute_action("D")
+            return cube
+        elif move == "z":
+            cube = self.execute_action("f")
+            cube = cube.execute_action("B'")
+            return cube
+        elif move == "z'":
+            cube = self.execute_action("f'")
+            cube = cube.execute_action("B")
+            return cube                                        
         
         return Cube(new_state)
     
     
     def execute_action_sequence(self, actions):
-        new_state = copy.deepcopy(self.state)
+        new_state = deepcopy(self.state)
+        
         cube = Cube(new_state)
         for action in actions:
             cube = cube.execute_action(action)
@@ -296,7 +480,11 @@ class Node:
 
     def __hash__(self):
         return hash(str(self.state.state))
-    
+        
+
+def deepcopy(state):
+    return [[[x for x in y] for y in z] for z in state]
+
 
 def get_children(parent_node):
     children = []
@@ -331,8 +519,23 @@ def string_to_state(string):
         for j in range(size*size):
             state_3d[i][j // size].append(state_1d[i*size*size + j])
             
+    #state_3d = print(tuple(tuple(tuple(x) for x in y) for y in state_3d))
     return state_3d
 
+
+def pick_color(char):
+    if char == 'R' or char == 4:
+        return RED_BG
+    elif char == 'G' or char == 1:
+        return GREEN_BG
+    elif char == 'B' or char == 3:
+        return BLUE_BG
+    elif char == 'Y' or char == 5:
+        return YELLOW_BG
+    elif char == 'O' or char == 2:
+        return ORANGE_BG
+    elif char == 'W' or char == 0:
+        return WHITE_BG
 
 
 def find_path(node):	
@@ -352,18 +555,6 @@ def cost(root_node, node):
     return g
 
 
-def goal_test_cross(state):
-    bottom = state[0,0,1]
-    
-    # 1 layer check
-    return state[0, 0, 1] == bottom and state[0, 2, 1] == bottom \
-        and state[0, 1, 0] == bottom and state[0, 1, 2] == bottom \
-        and state[1, 2, 1] == state[1, 1, 1] and state[2, 2, 1] == state[2, 1, 1] \
-        and state[3, 2, 1] == state[3, 1, 1] and state[4, 2, 1] == state[4, 1, 1] \
-        and state[0, 2, 2] == bottom and state[0, 2, 0] == bottom \
-        and state[0, 0, 2] == bottom and state[0, 0, 0] == bottom 
-
-
 def rot90(arr):
     rotated = zip(*arr[::-1])
     return list([list(elem) for elem in rotated])
@@ -377,13 +568,14 @@ def rot270(arr):
 def astar(root_node, h_func):
     frontier = [root_node]
     seen = set()
-    g = 0
+    f_scores = [h_func(root_node)]
     while len(frontier) > 0:
-        f_scores = [h_func(node) + cost(root_node, node) for node in frontier]
-        cur_node = frontier.pop((f_scores.index(min(f_scores))))
+        min_idx = f_scores.index(min(f_scores))
+        cur_node = frontier.pop(min_idx)
+        f_scores.pop(min_idx)
         seen.add(cur_node)
         #cur_node.state.display_colors()
-        print(find_path(cur_node))
+        #print(find_path(cur_node))
         if h_func(cur_node) == 0:
             path = find_path(cur_node)
             return path
@@ -392,6 +584,8 @@ def astar(root_node, h_func):
                 continue
             elif child not in frontier:
                 frontier.append(child)
+                f_scores.append(h_func(child) + cost(root_node, child))
+
             #else:
                 #same_node = frontier[frontier.index(child)]
                 #if cost(root_node, child) < cost(root_node, same_node):
@@ -399,17 +593,38 @@ def astar(root_node, h_func):
                     
         
 def idas(root_node, h_func):
-	bound = h_func(root_node)
-	path = [root_node]
-	while True:
-		t = idas_search(path, 0, bound, h_func)
-		if t == "FOUND":
-			path_taken = find_path(path[-1])
-			return path_taken
-		elif t == float('inf'):
-			return False  # not found
-		else:
-			bound = t   # increase bound to lowest neighbor's f
+    bound = h_func(root_node)
+    path = [root_node]
+    while True:
+        t = idas_search(path, 0, bound, h_func)
+        if t == "FOUND":
+            path_taken = find_path(path[-1])
+            return path_taken
+        elif t == float('inf'):
+            return False  # not found
+        else:
+            bound = t   # increase bound to lowest neighbor's f
+   
+   
+def idas_repeat(root_node, h_func):
+    bound = h_func(root_node)
+    path = [root_node]
+    paths = [[],[]]
+    g = 0
+    while len(paths) < 84:
+        t = idas_repeat_search(path, g, bound, h_func, paths)
+        if t == "FOUND":
+            path_taken = find_path(path[-1])
+            paths[0].append(path[-1])
+            paths[1].append(path_taken)
+            print(path_taken)
+            path[-1].state.display_colors()
+            # g = len(paths[1][-1]) * 8
+            path = [root_node]
+        elif t == float('inf'):
+            return False  # not found
+        else:
+            bound = t   # increase bound to lowest neighbor's f
 
 
 def idas_search(path, g, bound, h_func):
@@ -436,27 +651,52 @@ def idas_search(path, g, bound, h_func):
     return minimum
 
 
-def goal_test_OLL():
-    return h_top_corners() == 0
+def idas_repeat_search(path, g, bound, h_func, paths):
+    node = path[-1]
+    f = h_func(node) + g
+    #time.sleep(1)
+    #node.state.display_colors()
+    #print(find_path(node))
+    #print(h_func(node))
+    if h_func(node) == 0 and node not in paths[0]:  # if reached goal state
+        return "FOUND"
+    if f > bound:  # if we are over the ids bound
+        return f
+    minimum = float('inf')
+    for child in get_children(node):  # for each child of this node
+        if child not in path:
+            path.append(child)
+            t = idas_repeat_search(path, g + 1, bound, h_func, paths)
+            if t == "FOUND":  # if reached goal state
+                return "FOUND"
+            if t < minimum:  # if we have a new bound < inf
+                minimum = t
+            path.pop()
+    return minimum
 
 
-def bfs(root_node, h_func):
-	frontier = deque([root_node])
-	explored = set()
-	while len(frontier) > 0:
-		cur_node = frontier.popleft()
-		explored.add(cur_node)
-		if h_func(cur_node) == 0:
-			path = find_path(cur_node)
-			return path
-		for child in get_children(cur_node):
-			if child in explored:
-				continue
-			else:
-				frontier.append(child)
-	print("frontier empty")	
-	return False
-
+def bfs(root_node, goal_func):
+    frontier = deque([root_node])
+    explored = set()
+    paths = []
+    while len(frontier) > 0 or len(paths) < 72:
+        cur_node = frontier.popleft()
+        explored.add(cur_node)
+        #print(find_path(cur_node))
+        if goal_func(cur_node) == 0:
+            path = find_path(cur_node)
+            # return path
+            paths.append(path)
+            print(path)
+            cur_node.state.display_colors()
+        for child in get_children(cur_node):
+            if child in explored:
+                continue
+            else:
+                frontier.append(child)
+    print("frontier empty")	
+    return paths
+    #return False
 
 
 def h_cross(node):
@@ -483,28 +723,8 @@ def h_cross(node):
         h = h + 1
     if state[5][1][2] == bottom:
         h = h + 1
-    
-    # # white corners
-    # if state[0][0][0] != bottom:
-    #     h = h + 1
-    # if state[0][0][2] != bottom:
-    #     h = h + 1
-    # if state[0][2][0] != bottom:
-    #     h = h + 1
-    # if state[0][2][2] != bottom:
-    #     h = h + 1
         
-    # # top has white corners?
-    # if state[5][0][2] == bottom:
-    #     h = h + 1 
-    # if state[5][2][0] == bottom:
-    #     h = h + 1
-    # if state[5][0][0] == bottom:
-    #     h = h + 1
-    # if state[5][2][2] == bottom:
-    #     h = h + 1   
-        
-    return h
+    return h 
 
 
 def h_layer1_1(node):
@@ -556,7 +776,7 @@ def h_layer1_1(node):
         bad_corners = bad_corners + 1
     if (bad_corners == 4):
         h = h + 1
-    return h
+    return h 
     
     
 def h_layer1_2(node):
@@ -610,7 +830,8 @@ def h_layer1_2(node):
         h = h + 2
     elif (bad_corners == 3):
         h = h + 1
-    return h
+    
+    return h 
     
     
 def h_layer1_3(node):
@@ -727,13 +948,13 @@ def h_layer1_4(node):
     
     # top has white corners?
     if state[5][0][2] == bottom:
-        h = h + 1 
+        h = h + 3 
     if state[5][2][0] == bottom:
-        h = h + 1
+        h = h + 3
     if state[5][0][0] == bottom:
-        h = h + 1
+        h = h + 3
     if state[5][2][2] == bottom:
-        h = h + 1   
+        h = h + 3
     
     if state[1][1][0] == state[4][1][1] and state[4][1][2] == state[1][1][1]:
         h = h + 2
@@ -741,94 +962,7 @@ def h_layer1_4(node):
     return h * 2
 
 
-def h_top_cross(node):
-    h = 0
-    state = node.state.state
-    bottom = state[0][1][1]
-    top = state[5][1][1]
-    right = state[2][1][1]
-    left = state[4][1][1]
-    front = state[1][1][1]
-    back = state[3][1][1]
-    
-    # bottom cross perfect
-    if state[1][2][1] != front or state[0][0][1] != bottom:
-        h = h + 1
-    if state[2][2][1] != right or state[0][1][2] != bottom:
-        h = h + 1
-    if state[3][2][1] != back or state[0][2][1] != bottom:
-        h = h + 1
-    if state[4][2][1] != left or state[0][1][0] != bottom:
-        h = h + 1
-    
-    # bottom corners
-    if (state[0][0][0] != bottom or state[4][2][2] != left\
-            or state[1][2][0] != front\
-            #or state[4][1][2] != left or state[1][1][0] != front
-            ):
-        h = h + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != front\
-            or state[2][2][0] != right\
-            #or state[1][1][2] != front or state[2][1][0] != right
-            ):
-        h = h + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != right\
-            or state[3][2][0] != back\
-            #or state[2][1][2] != right or state[3][1][0] != back
-            ):
-        h = h + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != back\
-            or state[4][2][0] != left\
-            #or state[3][1][2] != back or state[4][1][0] != left
-            ):
-        h = h + 1
-        
-    # middle edges
-    if state[4][1][2] != left or state[1][1][0] != front:
-        h = h + 1  
-    if state[1][1][2] != front or state[2][1][0] != right:
-        h = h + 1    
-    if state[2][1][2] != right or state[3][1][0] != back:
-        h = h + 1    
-    if state[3][1][2] != back or state[4][1][0] != left:
-        h = h + 1
-        
-    # top cross kinda
-    if state[5][0][1] != top:
-        h = h + 1
-    if state[5][1][2] != top:
-        h = h + 1
-    if state[5][2][1] != top:
-        h = h + 1
-    if state[5][1][0] != top:
-        h = h + 1    
-        
-    # # top corners 
-    # if (state[0][0][0] != bottom or state[4][2][2] != left\
-    #         or state[1][2][0] != front\
-    #         #or state[4][1][2] != left or state[1][1][0] != front
-    #         ):
-    #     h = h + 1
-    # if  (state[0][0][2] != bottom or state[1][2][2] != front\
-    #         or state[2][2][0] != right\
-    #         #or state[1][1][2] != front or state[2][1][0] != right
-    #         ):
-    #     h = h + 1
-    # if (state[0][2][2] != bottom or state[2][2][2] != right\
-    #         or state[3][2][0] != back\
-    #         #or state[2][1][2] != right or state[3][1][0] != back
-    #         ):
-    #     h = h + 1
-    # if (state[0][2][0] != bottom or state[3][2][2] != back\
-    #         or state[4][2][0] != left\
-    #         #or state[3][1][2] != back or state[4][1][0] != left
-    #         ):
-    #     h = h + 1
-
-    return h / 8
-
-
-def h_top_corners(node):
+def h_oll(node):
     h = 0
     state = node.state.state
     bottom = state[0][1][1]
@@ -900,98 +1034,10 @@ def h_top_corners(node):
     if (state[5][2][0] != top):
         h = h + 1
 
-    return h
-
-
-def h_top_corners_final(node):
-    h = 0
-    state = node.state.state
-    bottom = state[0][1][1]
-    top = state[5][1][1]
-    right = state[2][1][1]
-    left = state[4][1][1]
-    front = state[1][1][1]
-    back = state[3][1][1]
-    
-    # bottom cross perfect
-    if state[1][2][1] != front or state[0][0][1] != bottom:
-        h = h + 1
-    if state[2][2][1] != right or state[0][1][2] != bottom:
-        h = h + 1
-    if state[3][2][1] != back or state[0][2][1] != bottom:
-        h = h + 1
-    if state[4][2][1] != left or state[0][1][0] != bottom:
-        h = h + 1
-    
-    # bottom corners
-    if (state[0][0][0] != bottom or state[4][2][2] != left\
-            or state[1][2][0] != front\
-            #or state[4][1][2] != left or state[1][1][0] != front
-            ):
-        h = h + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != front\
-            or state[2][2][0] != right\
-            #or state[1][1][2] != front or state[2][1][0] != right
-            ):
-        h = h + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != right\
-            or state[3][2][0] != back\
-            #or state[2][1][2] != right or state[3][1][0] != back
-            ):
-        h = h + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != back\
-            or state[4][2][0] != left\
-            #or state[3][1][2] != back or state[4][1][0] != left
-            ):
-        h = h + 4
-        
-    # middle edges
-    if state[4][1][2] != left or state[1][1][0] != front:
-        h = h + 1  
-    if state[1][1][2] != front or state[2][1][0] != right:
-        h = h + 1    
-    if state[2][1][2] != right or state[3][1][0] != back:
-        h = h + 1    
-    if state[3][1][2] != back or state[4][1][0] != left:
-        h = h + 1
-        
-    if state[1][2][1] != front or state[0][0][1] != bottom:
-        h = h + 1
-    if state[2][2][1] != right or state[0][1][2] != bottom:
-        h = h + 1
-    if state[3][2][1] != back or state[0][2][1] != bottom:
-        h = h + 1
-    if state[4][2][1] != left or state[0][1][0] != bottom:
-        h = h + 1
-        
-        
-    # # top cross kinda
-    # if state[5][0][1] != top or state[1][0][1] != front:
-    #     h = h + 1
-    # if state[5][1][2] != top or state[2][0][1] != right:
-    #     h = h + 1
-    # if state[5][2][1] != top or state[3][0][1] != back:
-    #     h = h + 1
-    # if state[5][1][0] != top or state[4][0][1] != left:
-    #     h = h + 1    
-        
-    # top corners 
-    if state[5][0][0] != top or state[3][0][2] != back \
-        or state[4][0][0] != left:
-        h = h + 1
-    if  state[5][0][2] != top or state[3][0][0] != back \
-        or state[2][0][2] != right:
-        h = h + 1
-    if state[5][2][2] != top or state[1][0][2] != front \
-        or state[2][0][0] != right:
-        h = h + 1
-    if state[5][2][0] != top or state[4][0][2] != left \
-        or state[1][0][0] != front:
-        h = h + 1
-
-    return h
-
-def h_top_edges_final(node):
+    return h * 2        
+   
+   
+def h_pll(node):
     h = 0
     state = node.state.state
     bottom = state[0][1][1]
@@ -1077,12 +1123,227 @@ def h_top_edges_final(node):
         or state[1][0][0] != front:
         h = h + 1
 
-    return h
+    return h * 2
 
 
+def goal_test_OLL(node):
+    state = node.state.state
+    
+    bottom = state[0][1][1]
+    top = state[5][1][1]
+    right = state[2][1][1]
+    left = state[4][1][1]
+    front = state[1][1][1]
+    back = state[3][1][1]
+        
+    # checks that everythin is solved besides last layer permutation
+    return state[1][2][1] == front and state[0][0][1] == bottom and \
+        state[2][2][1] == right and state[0][1][2] == bottom and \
+        state[3][2][1] == back and state[0][2][1] == bottom and \
+        state[4][2][1] == left and state[0][1][0] == bottom and \
+        state[0][0][0] == bottom and state[4][2][2] == left and \
+        state[1][2][0] == front and state[0][0][2] == bottom and \
+        state[1][2][2] == front and state[2][2][0] == right and \
+        state[0][2][2] == bottom and state[2][2][2] == right and \
+        state[3][2][0] == back and state[0][2][0] == bottom and \
+        state[3][2][2] == back and state[4][2][0] == left and \
+        state[4][1][2] == left and state[1][1][0] == front and \
+        state[1][1][2] == front and state[2][1][0] == right and \
+        state[2][1][2] == right and state[3][1][0] == back and \
+        state[3][1][2] == back and state[4][1][0] == left and \
+        state[5][0][1] == top and state[5][1][2] == top and \
+        state[5][2][1] == top and state[5][1][0] == top and \
+        state[5][0][0] == top and state[5][0][2] == top and \
+        state[5][2][2] == top and state[5][2][0] == top
+    
+    
+def goal_test_solved(node):
+    state = node.state.state
+    
+    bottom = state[0][1][1]
+    top = state[5][1][1]
+    right = state[2][1][1]
+    left = state[4][1][1]
+    front = state[1][1][1]
+    back = state[3][1][1]
+        
+    # checks that everythin is solved besides last layer permutation
+    return state[1][2][1] == front and state[0][0][1] == bottom and \
+        state[2][2][1] == right and state[0][1][2] == bottom and \
+        state[3][2][1] == back and state[0][2][1] == bottom and \
+        state[4][2][1] == left and state[0][1][0] == bottom and \
+        state[0][0][0] == bottom and state[4][2][2] == left and \
+        state[1][2][0] == front and state[0][0][2] == bottom and \
+        state[1][2][2] == front and state[2][2][0] == right and \
+        state[0][2][2] == bottom and state[2][2][2] == right and \
+        state[3][2][0] == back and state[0][2][0] == bottom and \
+        state[3][2][2] == back and state[4][2][0] == left and \
+        state[4][1][2] == left and state[1][1][0] == front and \
+        state[1][1][2] == front and state[2][1][0] == right and \
+        state[2][1][2] == right and state[3][1][0] == back and \
+        state[3][1][2] == back and state[4][1][0] == left and \
+        state[5][0][1] == top and state[5][1][2] == top and \
+        state[5][2][1] == top and state[5][1][0] == top and \
+        state[5][0][0] == top and state[5][0][2] == top and \
+        state[5][2][2] == top and state[5][2][0] == top and \
+        state[1][0][1] == front and state[2][0][1] == right and \
+        state[3][0][1] == back and state[4][0][1] == left and \
+        state[3][0][2] == back and state[4][0][0] == left and \
+        state[3][0][0] == back and state[2][0][2] == right and \
+        state[1][0][2] == front and state[2][0][0] == right and \
+        state[4][0][2] == left and state[1][0][0] == front
 
     
+def test_actions():
+    cube = Cube(solved_state_ints)
+    root = Node(cube, None, None)
+    root.state.display_colors()
+    
+    # for action in ACTIONS:
+    #     print("Solved:")
+    #     root.state.display_colors()
+    #     print(action, ":")
+    #     root.state.execute_action(action).display_colors()
+    
+    root.state.execute_action("R").display_colors()
+    root.state.execute_action("R'").display_colors()
+    root.state.execute_action("L").display_colors()
+    root.state.execute_action("L'").display_colors()
+    root.state.execute_action("U").display_colors()
+    root.state.execute_action("U'").display_colors()
+    root.state.execute_action("D").display_colors()
+    root.state.execute_action("D'").display_colors()
+    root.state.execute_action("F").display_colors()
+    root.state.execute_action("F'").display_colors()
+    root.state.execute_action("B").display_colors()
+    root.state.execute_action("B'").display_colors()
+    
+    root.state.execute_action("M").display_colors()
+    root.state.execute_action("M'").display_colors()
+    root.state.execute_action("E").display_colors()
+    root.state.execute_action("E'").display_colors()
+    root.state.execute_action("S").display_colors()
+    root.state.execute_action("S'").display_colors()
+    
+    root.state.execute_action("r").display_colors()
+    root.state.execute_action("r'").display_colors()
+    root.state.execute_action("l").display_colors()
+    root.state.execute_action("l'").display_colors()
+    root.state.execute_action("u").display_colors()
+    root.state.execute_action("u'").display_colors()
+    root.state.execute_action("d").display_colors()
+    root.state.execute_action("d'").display_colors()
+    root.state.execute_action("f").display_colors()
+    root.state.execute_action("f'").display_colors()
+    root.state.execute_action("b").display_colors()
+    root.state.execute_action("b'").display_colors()
 
+    root.state.execute_action("x").display_colors()
+    root.state.execute_action("x'").display_colors()
+    root.state.execute_action("y").display_colors()
+    root.state.execute_action("y'").display_colors()
+    root.state.execute_action("z").display_colors()
+    root.state.execute_action("z'").display_colors()
+
+
+def test_alg_oll(node, alg):
+    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    if goal_test_OLL(test_node):
+        return alg
+    alg.insert(0, "U")
+    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    if goal_test_OLL(test_node):
+        return alg
+    alg[0] = "U'"
+    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    if goal_test_OLL(test_node):
+        return alg
+    alg[0] = "U2"
+    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    if goal_test_OLL(test_node):
+        return alg
+    
+    return False
+    
+
+def solve_oll(node):
+    try:
+        with open("oll.txt", 'r') as f:
+            lines = f.read().splitlines()
+            #lines = [l.split(',') for l in lines]
+            for l in lines:
+                result = test_alg_oll(node, l.split())
+                if result != False:
+                    f.close()
+                    return result
+            return False
+    except IOError:
+        print("There was an error reading oll.txt.")
+        exit()
+        
+        
+def test_alg_pll(node, alg):
+    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    if goal_test_solved(test_node):
+        return alg
+    elif goal_test_solved(Node(test_node.state.execute_action("U"), None, None)):
+        return alg + ["U"]
+    elif goal_test_solved(Node(test_node.state.execute_action("U'"), None, None)):
+        return alg + ["U'"]    
+    elif goal_test_solved(Node(test_node.state.execute_action("U2"), None, None)):
+        return alg + ["U2"]        
+    
+    alg.insert(0, "U")
+    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    if goal_test_solved(test_node):
+        return alg
+    elif goal_test_solved(Node(test_node.state.execute_action("U"), None, None)):
+        return alg + ["U"]
+    elif goal_test_solved(Node(test_node.state.execute_action("U'"), None, None)):
+        return alg + ["U'"]    
+    elif goal_test_solved(Node(test_node.state.execute_action("U2"), None, None)):
+        return alg + ["U2"]
+    
+    alg[0] = "U2"
+    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    if goal_test_solved(test_node):
+        return alg
+    elif goal_test_solved(Node(test_node.state.execute_action("U"), None, None)):
+        return alg + ["U"]
+    elif goal_test_solved(Node(test_node.state.execute_action("U'"), None, None)):
+        return alg + ["U'"]    
+    elif goal_test_solved(Node(test_node.state.execute_action("U2"), None, None)):
+        return alg + ["U2"]      
+    
+    alg[0] = "U'"
+    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    if goal_test_solved(test_node):
+        return alg
+    elif goal_test_solved(Node(test_node.state.execute_action("U"), None, None)):
+        return alg + ["U"]
+    elif goal_test_solved(Node(test_node.state.execute_action("U'"), None, None)):
+        return alg + ["U'"]    
+    elif goal_test_solved(Node(test_node.state.execute_action("U2"), None, None)):
+        return alg + ["U2"]  
+    
+    return False
+        
+def solve_pll(node):
+    if goal_test_solved(node):
+        return []
+    try:
+        with open("pll.txt", 'r') as f:
+            lines = f.read().splitlines()
+            #lines = [l.split(',') for l in lines]
+            for l in lines:
+                result = test_alg_pll(node, l.split())
+                if result != False:
+                    f.close()
+                    return result
+            return False
+    except IOError:
+        print("There was an error reading oll.txt.")
+        exit()
 
 #solved_state = string_to_state("W"+" W"*8+" G"*9+" O"*9+" B"*9 +" R"*9+" Y"*9)
 solved_state_ints = string_to_state('0'+' 0'*8+" 1"*9+" 2"*9+" 3"*9 +" 4"*9+" 5"*9)
@@ -1098,23 +1359,27 @@ def main():
     
     # gen root and set to start puzzle
     cube = Cube(start_state)
-    #cube = cube.execute_action_sequence("R R L' L' U U D' D' F F B' B'")
     root = Node(cube, None, None)
     root.state.display_colors()
+    
+    start_time = time.time()
 
+    # feed custom scramble
+    # root.state = root.state.execute_action_sequence("F' U' U' B L' F' R D' B' L B' B' U' F' D' B R' B' D' R' L D F L' F")
+    
+    
     # scramble puzzle
     root.state, scramble_seq = root.state.scramble()
     print(" ".join(scramble_seq), '\n')
+    
     
     root.state.display_colors()
     
     solve_sequence = []
     
-    start_time = time.time()
     cross_path = idas(root, h_cross)
     end_time = time.time() - start_time
     print(end_time)
-        
     for move in cross_path:
         root.state = root.state.execute_action(move)
     print(" ".join(cross_path), "\n")
@@ -1156,19 +1421,18 @@ def main():
     print(" ".join(layer1_4_path), "\n")
     root.state.display_colors()
     solve_sequence.append(layer1_4_path)
+
+    oll_path = solve_oll(root)
+    for move in oll_path:
+        root.state = root.state.execute_action(move)
+    end_time = time.time() - start_time
+    print(end_time)
+    print(" ".join(oll_path), "\n")
+    root.state.display_colors()
+    solve_sequence.append(oll_path)
     
-    # full_path = idas(root, h_top_cross)
-    # for move in full_path:
-    #     root.state = root.state.execute_action(move)
-    # end_time = time.time() - start_time
-    # print(end_time)
-    # print(" ".join(full_path), "\n")
-    # root.state.display_colors()
-    # solve_sequence.append(full_path)
     
-    oll_case = hash(root)
-    
-    full_path = idas(root, h_top_corners)
+    full_path = solve_pll(root)
     for move in full_path:
         root.state = root.state.execute_action(move)
     end_time = time.time() - start_time
@@ -1177,41 +1441,15 @@ def main():
     root.state.display_colors()
     solve_sequence.append(full_path)
     
-    oll_file = open("oll.txt", 'a')
-    oll_file.write(str(oll_case) + "," + " ".join(full_path)+"\n")
-    oll_file.close()
-    
-    # full_path = idas(root, h_top_corners_final)
-    # for move in full_path:
-    #     root.state = root.state.execute_action(move)
-    # end_time = time.time() - start_time
-    # print(end_time)
-    # print(" ".join(full_path), "\n")
-    # root.state.display_colors()
-    # solve_sequence.append(full_path)
-    
-    pll_case = hash(root)
-    
-    full_path = idas(root, h_top_edges_final)
-    for move in full_path:
-        root.state = root.state.execute_action(move)
-    end_time = time.time() - start_time
-    print(end_time)
-    print(" ".join(full_path), "\n")
-    root.state.display_colors()
-    solve_sequence.append(full_path)
-    
-    pll_file = open("pll.txt", 'a')
-    pll_file.write(str(pll_case) + "," + " ".join(full_path)+"\n")
-    pll_file.close()
-    
-    print(" ".join(scramble_seq) + "\n")
+    print("\nScramble:    " + " ".join(scramble_seq) + "\n")
     solve_seq_str = " ".join([" ".join(x) for x in solve_sequence])
     print("Full solve: ", solve_seq_str)
     
     
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     main()
+    
+    #cProfile.run('main()', 'restats')
+    #p = pstats.Stats('restats')
+    #p.strip_dirs().sort_stats(SortKey.TIME).print_stats()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -30,7 +30,8 @@ This project includes simulation for all quarter and half face turns, slice turn
 The cube state is primarily displayed use xterm-256 color escape sequences.
 > Note: This is not compatible with all computer terminals, only terminals that support xterm-256
 
-![Alt text](/images/solved_display.jpg?raw=true)
+![image](https://user-images.githubusercontent.com/63261198/138524649-976182d5-813b-4234-b278-b9c19a7a3407.png)
+
 
 ## Solving Algorithm
 The AI that solves the cube mimics the CFOP method that is used commonly in advanced speed-cubing. This method is a 4 step method represented by the name: Cross , F2L, OLL, PLL. 

@@ -21,7 +21,7 @@ This project uses official rubik's cube notation to represent the cube, this is 
 
 [JPerm's Notation Guide](https://jperm.net/3x3/moves)
 
-This project includes simulation for all quarter and half face turns, slice turns, double layer turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
+We provide simulation for all official moves: quarter and half face turns, slice turns, two layer (wide) turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
 
 ## Visualizing the Cube
 The cube state is primarily displayed use xterm-256 color escape sequences. It is unfolded from the front face. The front face here is green.

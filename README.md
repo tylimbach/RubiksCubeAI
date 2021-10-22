@@ -27,13 +27,13 @@ This project includes simulation for all quarter and half face turns, slice turn
 The cube state is primarily displayed use xterm-256 color escape sequences. Here is a solved vs scrambled cube.
 > Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
-![image](https://user-images.githubusercontent.com/63261198/138527666-5df8c10e-657b-48c9-b4fc-6693206dede1.png)
+![image](https://user-images.githubusercontent.com/63261198/138527666-5df8c10e-657b-48c9-b4fc-6693206dede1.png | 700x200)
 
-![image](https://user-images.githubusercontent.com/63261198/138527626-93872c77-0e4d-4970-beb2-7c18e56c8539.png)
+![image](https://user-images.githubusercontent.com/63261198/138527626-93872c77-0e4d-4970-beb2-7c18e56c8539.png | 700x200)
 
 The alternative method to display the cube is using numbers rather than colors. Numbers represent 1-6 are their own colors.
 
-![image](https://user-images.githubusercontent.com/63261198/138527688-b586fcb1-effb-4cef-8ce4-321b00a14c7d.png)
+![image](https://user-images.githubusercontent.com/63261198/138527688-b586fcb1-effb-4cef-8ce4-321b00a14c7d.png | 700x200)
 
 
 ## Solving Algorithm

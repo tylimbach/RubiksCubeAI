@@ -23,7 +23,9 @@ This project uses official rubik's cube notation to represent the cube, this is 
 
 Here is a quick cheat sheet from J Perm's website:
 
-<img src="https://jperm.net/images/notation.png" width="700" height="500"
+<img src="https://jperm.net/images/notation.png" width="700" height="500">
+
+You can reverse any of the moves by appended a single apostrophe ' to the letter.
 
 We provide simulation for all official moves: quarter and half face turns, slice turns, two layer (wide) turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
 

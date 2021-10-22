@@ -24,7 +24,7 @@ This project uses official rubik's cube notation to represent the cube, this is 
 This project includes simulation for all quarter and half face turns, slice turns, double layer turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
 
 ## Visualizing the Cube
-The cube state is primarily displayed use xterm-256 color escape sequences.
+The cube state is primarily displayed use xterm-256 color escape sequences. It is unfolded from the front face. The front face here is green.
 > Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
 This cube is solved:

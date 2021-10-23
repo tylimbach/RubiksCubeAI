@@ -50,25 +50,17 @@ Here is a solved cube displayed with numbers:
 ## Solving Algorithm
 The AI that solves the cube mimics the CFOP method that is used commonly in advanced speed-cubing. This method is a 4 step method represented by the name: Cross , F2L, OLL, PLL. 
 
-This method is not an "optimal" algorithm, this is a human method. Furthermore, the heuristics used in the AI's algorithm are inadmissible, as a result search times are far shorter, but solution found for each search step is not guaranteed to be the shortest.
-
-Steps involving search are limited to only attempting quarter face turns. Slices, half turns, cube rotations and 2 layer turns are excluded from the search, as they are all composed of some combination of the quarter face turns. OLL and PLL use algorithms that may include any combination of moves since we don't worry about a branching factor there.
-
 #### Cross
-1 IDA* search to solve the bottom cross (4 bottom edges).
+Bottom 4 edges. Uses IDA* search.
 
 #### F2L (First 2 Layers)
-4 IDA* searches to solve F2L. It solves each pair (1 bottom corner + 1 second layer edge) one at a time using a separate search.
+4 corner/edge pairs. Uses 4 IDA* searches.
 
 #### OLL (Orientation of Last Layer)
-Brute force testing of 57 possible algorithms which cover all possible OLL cases. Also determines if U turns are required prior to the algorithm.
-
-Algorithms are read from oll.txt
+Attempts algorithms read from oll.txt. The 57 algorithms cover all cases when positioned correctly.
 
 #### PLL (Permutation of Last Layer)
-Brute force testing of 21 possible algorithms which cover all possible PLL cases. Also determines if U turns are required prior or post algorithm.
-
-Algorithms are read from pll.txt
+Attempts algorithms read from pll.txt. The 21 algorithms cover all cases when positioned correctly.
 
 ## Known Issues
 - PLL can fail rarely: Fix in progress
@@ -77,5 +69,5 @@ Algorithms are read from pll.txt
 - [ ] Add a menu loop
 - [ ] Add a GUI
 - [ ] Add a changelog
-- [ ] Improve F2L search heuristics
+- [ ] Improve F2L search heuristics.
 - [ ] Improve code documentation

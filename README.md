@@ -61,12 +61,12 @@ Steps involving search are limited to only attempting quarter face turns. Slices
 4 IDA* searches to solve F2L. It solves each pair (1 bottom corner + 1 second layer edge) one at a time using a separate search.
 
 #### OLL (Orientation of Last Layer)
-Brute force testing of 57 possible algorithms which cover all possible OLL cases. This can require additional U turns to set up the algorithm.
+Brute force testing of 57 possible algorithms which cover all possible OLL cases. Also determines if U turns are required prior to the algorithm.
 
 Algorithms are read from oll.txt
 
 #### PLL (Permutation of Last Layer)
-Brute force testing of 21 possible algorithms which cover all possible OLL cases. This can require additional U turns to set up the algorithm, as well as additional U turns after the algorithm to align the last layer with the other two layers. A 22nd algorithm is included, to cover any case when the layers are only misaligned and just require U turns. 
+Brute force testing of 21 possible algorithms which cover all possible PLL cases. Also determines if U turns are required prior or post algorithm.
 
 Algorithms are read from pll.txt
 

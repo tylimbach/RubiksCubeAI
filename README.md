@@ -41,7 +41,7 @@ Here is a scrambled cube, along with it's scramble sequence:
 
 <img src="https://user-images.githubusercontent.com/63261198/138527626-93872c77-0e4d-4970-beb2-7c18e56c8539.png" width="700" height="220">
 
-Because some terminals do not support all the colors used, the current alternative method to display the cube is using numbers rather than colors. Numbers represent 1-6 are their own colors.
+Because some terminals do not support all the colors used, the current alternative method to display the cube is using numbers rather than colors. Numbers 1-6 represent colors.
 
 Here is a solved cube displayed with numbers:
 

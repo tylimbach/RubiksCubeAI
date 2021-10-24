@@ -63,7 +63,7 @@ Attempts algorithms read from oll.txt. The 57 algorithms cover all cases when po
 Attempts algorithms read from pll.txt. The 21 algorithms cover all cases when positioned correctly.
 
 ## Known Issues
-- PLL can fail rarely: Fix in progress
+None
 
 ## Roadmap
 - [ ] Add a menu loop

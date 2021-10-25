@@ -10,9 +10,10 @@ import random
 import time
 from collections import deque
 
-import cProfile
-import pstats
-from pstats import SortKey
+## profiling imports
+#import cProfile
+#import pstats
+#from pstats import SortKey
 
 import os
 import sys

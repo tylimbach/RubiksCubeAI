@@ -1,5 +1,5 @@
 # Rubiks Cube Simulator
-Rubiks Cube Solver is a terminal application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
+Rubiks Cube Simulator is a terminal application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
 
 - Creation of a solved 3x3 cube
 - Simulate turns or rotations
@@ -23,7 +23,7 @@ This project uses official rubik's cube notation to represent the cube, this is 
 
 Here is a quick cheat sheet from J Perm's website:
 
-<img src="https://jperm.net/images/notation.png" width="500" height="300">
+<img src="https://jperm.net/images/notation.png" width="525" height="400">
 
 The above moves are the normal moves in the clockwise direction. You can reverse the direction of any move by appending a single quote ' to the letter. Reversed, or inverse moves, are counter-clockwise. Appending a 2 to the move just means do it twice in a row.
 

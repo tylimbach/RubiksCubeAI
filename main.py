@@ -1,14 +1,19 @@
 """
 main.py
-Main file for Rubik's Cube solver
+Main script for Rubik's Cube Solver
 """
 
 __author__ = "Tyler Limbach"
+
+# moves includes all the functions that modify states.
+from moves import ACTIONS
 
 from math import sqrt as sqrt
 import random
 import time
 from collections import deque
+import os
+import sys
 
 ## profiling imports
 #import cProfile
@@ -16,15 +21,23 @@ from collections import deque
 #from pstats import SortKey
 
 import os
-import sys
 
-#random.seed(0)
 
-# set python hash seed to 0 so hashes are consistent across runs
-hashseed = os.getenv('PYTHONHASHSEED')
-if not hashseed:
-    os.environ['PYTHONHASHSEED'] = '0'
-    os.execv(sys.executable, [sys.executable] + sys.argv)
+def clear():
+    os.system("clear")
+
+# # profiling imports
+# import cProfile
+# import pstats
+# from pstats import SortKey
+
+# random.seed(1)
+
+# # set python hash seed to 0 so hashes are consistent across runs
+# hashseed = os.getenv('PYTHONHASHSEED')
+# if not hashseed:
+#     os.environ['PYTHONHASHSEED'] = '0'
+#     os.execv(sys.executable, [sys.executable] + sys.argv)
     
 # color escape sequences for xterm-256color bgs
 ORANGE_BG = "\033[48;5;208m  \033[0;0m"
@@ -34,70 +47,48 @@ GREEN_BG = "\033[48;5;10m  \033[0;0m" # 2
 BLUE_BG = "\033[48;5;12m  \033[0;0m" # 21
 WHITE_BG = "\033[48;5;254m  \033[0;0m"
 
-# ACTIONS will be used a dictionary to quickly determine moves from strings
-ACTIONS = {}
-
 class Cube:
+    """ data structure to represent a rubiks cube 
+    """
+    
     def __init__(self, state):
         self.size = int(len(state[0]))
         self.state = state
-        
-        # self.down = self.state[0]
-        # self.front = self.state[1]
-        # self.right = self.state[2]
-        # self.back = self.state[3]
-        # self.left = self.state[4]
-        # self.up = self.state[5]
-        
+
 
     def display_text(self):
         """ prints to terminal a text representation of the cube
         
         the print output represents a physical cube's faces as if
         they were unfolded away from the middle (front) face into 2d space
-        
-        ex: a default solved cube state (green is front face)
-        
-            YYY                   
-            YYY                    
-            YYY                                     
-        RRR GGG OOO BBB
-        RRR GGG OOO BBB   
-        RRR GGG OOO BBB
-            WWW
-            WWW
-            WWW 
+        numbers 1-6 represent colors
         """         
         output = ""
         for i in range(self.size):
-            output += " " * (self.size*4+2)
-            output += "".join(self.state[5][i])
+            output += " " * (self.size*3+1)
+            output += "".join(str(self.state[5][i]))
             output += "\n"
         for i in range(self.size):
-            output += "".join(self.state[4][i])
+            output += "".join(str(self.state[4][i]))
             output += " "
-            output += "".join(self.state[1][i])
+            output += "".join(str(self.state[1][i]))
             output += " "
-            output += "".join(self.state[2][i])
+            output += "".join(str(self.state[2][i]))
             output += " "
-            output += "".join(self.state[3][i])
+            output += "".join(str(self.state[3][i]))
             output += "\n"
         for i in range(self.size):
-            output += " " * (self.size*4+2)
-            output += "".join(self.state[0][i])
+            output += " " * (self.size*3+1)
+            output += "".join(str(self.state[0][i]))
             output += "\n"
         print(output)
         
+        
     def display_colors(self):
-        """ prints to terminal a colored representation of the cube in space
+        """ prints to terminal a colored representation of the cube
         
         the print output represents a physical cube's faces as if
         they were unfolded away from the middle (front) face into 2d space
-        
-        this function works just like display_text, but instead of printing
-        letters it displays colors using color escape sequences from xterm-256
-        as a result, this function may not work correctly in terminals that don't
-        support xterm-256
         """         
         output = ""
         for i in range(self.size):
@@ -124,308 +115,44 @@ class Cube:
             print()
         print(output)
         
-
-    def execute_action(self, move):
-        """simulates a turn of this cube
+        
+    def execute_action(self, action):
+        """ simulates a turn or rotation of the cube
+        
+        moves.py contains the functions that modify the state in order to perform each action
 
         Args:
-            move (string): a string representing the face to turn 
-                and the direction to turn:
+            action (string): string representation of the action to perform in 3x3 Rubiks notation
+                example strings:
+                R -> turn right face CW 1/4
+                R' -> counterclockwise turn of right face
+                x -> clockwise rotation around x axis
                 
-                only 1 letter if clockwise.
-                counterclockwise represented by a letter follow by a single quote '
-                double turn is letter followed by a 2
-                lower case letter is an outer layer + middle layer turned together
-                lowercase x, y or z is a rotation about that axis
-                
-                - 12 normal moves (outer layer turns)
-                - 6 center turns (middle layer turns)
-                - 9 double turns (same consecutive move twice, 3 center 6 normal)
-                - 12 joined turns (outer + middle layer together)
-                - 6 rotations
-                
-                README contains detailed turn notation information
-                
-                examples: 
-                    R -> clockwise turn of right face
-                    U' -> counterclockwise turn of up face
-                    M2 -> 2x turn of middle column on front face twice (direction doesn't matter)
-                    d -> clockwise turn of down face + middle front row (same as 2 moves: D E)
-                    x' -> counterclockwise rotation about x axis (turn the whole cube like an R' move)
+                see README.txt for more detailed notation
+                ACTIONS is a dictionary that maps action to the correct function from moves.py
 
         Returns:
-            Cube: the new cube after the turn
+            Cube: a Cube reflecting the new state after the action is performed
         """
-        new_state = deepcopy(self.state)        
+        state = deepcopy_state(self.state)        
         max_idx = self.size - 1
         
-        # outer moves
-        if move == "R":
-            new_state[2] = rot90(new_state[2])
-            for i in range(self.size):
-                new_state[5][i][max_idx], new_state[1][i][max_idx], \
-                    new_state[0][i][max_idx], new_state[3][max_idx - i][0] = \
-                    new_state[1][i][max_idx], new_state[0][i][max_idx], \
-                    new_state[3][max_idx - i][0], new_state[5][i][max_idx]
-        elif move == "R'":
-            new_state[2] = rot270(new_state[2])
-            for i in range(self.size):
-                new_state[1][i][max_idx], new_state[0][i][max_idx], \
-                    new_state[3][max_idx - i][0], new_state[5][i][max_idx] = \
-                    new_state[5][i][max_idx], new_state[1][i][max_idx], \
-                    new_state[0][i][max_idx], new_state[3][max_idx - i][0]
-        elif move == "L":
-            new_state[4] = rot90(new_state[4])
-            for i in range(self.size):
-                new_state[1][i][0], new_state[0][i][0], new_state[3][max_idx - i][max_idx], new_state[5][i][0] = \
-                    new_state[5][i][0], new_state[1][i][0], new_state[0][i][0], new_state[3][max_idx - i][max_idx]
-        elif move == "L'":
-            new_state[4] = rot270(new_state[4])            
-            for i in range(self.size):            
-                new_state[5][i][0], new_state[1][i][0], new_state[0][i][0], new_state[3][max_idx - i][max_idx] = \
-                    new_state[1][i][0], new_state[0][i][0], new_state[3][max_idx - i][max_idx], new_state[5][i][0]
-        elif move == "U":
-            new_state[5] = rot90(new_state[5])
-            for i in range(self.size):
-                new_state[1][0][i], new_state[2][0][i], new_state[3][0][i], new_state[4][0][i] = \
-                    new_state[2][0][i], new_state[3][0][i], new_state[4][0][i], new_state[1][0][i]
-        elif move == "U'":
-            new_state[5] = rot270(new_state[5])
-            for i in range(self.size):
-                new_state[2][0][i], new_state[3][0][i], new_state[4][0][i], new_state[1][0][i] = \
-                    new_state[1][0][i], new_state[2][0][i], new_state[3][0][i], new_state[4][0][i]
-        elif move == "D":
-            new_state[0] = rot90(new_state[0])            
-            for i in range(self.size):
-                new_state[1][max_idx][i], new_state[2][max_idx][i], new_state[3][max_idx][i], new_state[4][max_idx][i] = \
-                    new_state[4][max_idx][i], new_state[1][max_idx][i], new_state[2][max_idx][i], new_state[3][max_idx][i]           
-        elif move == "D'":
-            new_state[0] = rot270(new_state[0])        
-            for i in range(self.size):
-                new_state[4][max_idx][i], new_state[1][max_idx][i], new_state[2][max_idx][i], new_state[3][max_idx][i] = \
-                    new_state[1][max_idx][i], new_state[2][max_idx][i], new_state[3][max_idx][i], new_state[4][max_idx][i]
-        elif move == "F":
-            new_state[1] = rot90(new_state[1])
-            displacedR = new_state[2][0][0]
-            displacedL = new_state[4][0][max_idx]
-            for i in range(self.size):
-                new_state[5][max_idx][i], new_state[2][i][0], new_state[0][0][i], new_state[4][i][max_idx] = \
-                    new_state[4][max_idx - i][max_idx], new_state[5][max_idx][i], new_state[2][max_idx - i][0], new_state[0][0][i]
-            new_state[5][max_idx][max_idx] = displacedL
-            new_state[0][0][max_idx] = displacedR
-        elif move == "F'":
-            new_state[1] = rot270(new_state[1]) 
-            displacedR = new_state[2][max_idx][0]
-            displacedL = new_state[4][max_idx][max_idx]
-            for i in range(self.size):
-                new_state[4][max_idx - i][max_idx], new_state[5][max_idx][i], new_state[2][max_idx - i][0], new_state[0][0][i] = \
-                    new_state[5][max_idx][i], new_state[2][i][0], new_state[0][0][i], new_state[4][i][max_idx]
-            new_state[5][max_idx][max_idx] = displacedR
-            new_state[0][0][max_idx] = displacedL
-        elif move == "B":
-            new_state[3] = rot90(new_state[3])
-            displacedR = new_state[2][max_idx][max_idx]
-            displacedL = new_state[4][max_idx][0]
-            for i in range(self.size):
-                new_state[4][max_idx - i][0], new_state[5][0][i], new_state[2][max_idx - i][max_idx], new_state[0][max_idx][i] = \
-                    new_state[5][0][i], new_state[2][i][max_idx], new_state[0][max_idx][i], new_state[4][i][0]
-            new_state[5][0][max_idx] = displacedR
-            new_state[0][max_idx][max_idx] = displacedL
-        elif move == "B'":
-            new_state[3] = rot270(new_state[3])
-            displacedR = new_state[2][0][max_idx]
-            displacedL = new_state[4][0][0]
-            for i in range(self.size):
-                new_state[5][0][i], new_state[2][i][max_idx], new_state[0][max_idx][i], new_state[4][i][0] = \
-                    new_state[4][max_idx - i][0], new_state[5][0][i], new_state[2][max_idx - i][max_idx], new_state[0][max_idx][i]
-            new_state[5][0][max_idx] = displacedL
-            new_state[0][max_idx][max_idx] = displacedR     
-            
-        # center moves
-        elif move == "M":
-            for i in range(self.size):
-                new_state[1][i][max_idx - 1], new_state[0][i][max_idx - 1], \
-                    new_state[3][max_idx - i][1], new_state[5][i][max_idx - 1] = \
-                    new_state[5][i][max_idx - 1], new_state[1][i][max_idx - 1], \
-                    new_state[0][i][max_idx - 1], new_state[3][max_idx - i][1]        
-        elif move == "M'":
-            for i in range(self.size):
-                new_state[5][i][max_idx - 1], new_state[1][i][max_idx - 1], \
-                    new_state[0][i][max_idx - 1], new_state[3][max_idx - i][1] = \
-                    new_state[1][i][max_idx - 1], new_state[0][i][max_idx - 1], \
-                    new_state[3][max_idx - i][1], new_state[5][i][max_idx - 1] 
-        elif move == "E":
-            for i in range(self.size):
-                new_state[1][max_idx - 1][i], new_state[2][max_idx - 1][i], new_state[3][max_idx - 1][i], new_state[4][max_idx - 1][i] = \
-                    new_state[4][max_idx - 1][i], new_state[1][max_idx - 1][i], new_state[2][max_idx - 1][i], new_state[3][max_idx - 1][i]     
-        elif move == "E'":
-            for i in range(self.size):
-                new_state[4][max_idx - 1][i], new_state[1][max_idx - 1][i], new_state[2][max_idx - 1][i], new_state[3][max_idx - 1][i] = \
-                    new_state[1][max_idx - 1][i], new_state[2][max_idx - 1][i], new_state[3][max_idx - 1][i], new_state[4][max_idx - 1][i]
-        elif move == "S":
-            displacedR = new_state[2][0][1]
-            displacedL = new_state[4][0][max_idx - 1]
-            for i in range(self.size):
-                new_state[5][max_idx - 1][i], new_state[2][i][1], new_state[0][1][i], new_state[4][i][max_idx - 1] = \
-                    new_state[4][max_idx - i][max_idx - 1], new_state[5][max_idx - 1][i], new_state[2][max_idx - i][1], new_state[0][1][i]
-            new_state[5][max_idx - 1][max_idx] = displacedL
-            new_state[0][1][max_idx] = displacedR
-        elif move == "S'":
-            displacedR = new_state[2][max_idx][1]
-            displacedL = new_state[4][max_idx][max_idx - 1]
-            for i in range(self.size):
-                new_state[4][max_idx - i][max_idx - 1], new_state[5][max_idx - 1][i], new_state[2][max_idx - i][1], new_state[0][1][i] = \
-                    new_state[5][max_idx - 1][i], new_state[2][i][1], new_state[0][1][i], new_state[4][i][max_idx - 1]
-            new_state[5][max_idx - 1][max_idx] = displacedR
-            new_state[0][1][max_idx] = displacedL
-        
-        # double moves
-        elif move == "R2":
-            cube = self.execute_action("R")
-            cube = cube.execute_action("R")
-            return cube
-        elif move == "L2":
-            cube = self.execute_action("L")
-            cube = cube.execute_action("L")
-            return cube
-        elif move == "U2":
-            cube = self.execute_action("U")
-            cube = cube.execute_action("U")
-            return cube
-        elif move == "D2":
-            cube = self.execute_action("D")
-            cube = cube.execute_action("D")
-            return cube
-        elif move == "F2":
-            cube = self.execute_action("F")
-            cube = cube.execute_action("F")
-            return cube
-        elif move == "B2":
-            cube = self.execute_action("B")
-            cube = cube.execute_action("B")
-            return cube
-        elif move == "M2":
-            cube = self.execute_action("M")
-            cube = cube.execute_action("M")
-            return cube
-        elif move == "E2":
-            cube = self.execute_action("E")
-            cube = cube.execute_action("E")
-            return cube
-        elif move == "S2":
-            cube = self.execute_action("S")
-            cube = cube.execute_action("S")
-            return cube
-        
-        # 2 layers move at sime time (center + outer)
-        elif move == "r":
-            cube = self.execute_action("R")
-            cube = cube.execute_action("M'")
-            return cube
-        elif move == "r'":
-            cube = self.execute_action("R'")
-            cube = cube.execute_action("M")
-            return cube
-        elif move == "l":
-            cube = self.execute_action("L")
-            cube = cube.execute_action("M")
-            return cube
-        elif move == "l'":
-            cube = self.execute_action("L'")
-            cube = cube.execute_action("M'")
-            return cube
-        elif move == "u":
-            cube = self.execute_action("U")
-            cube = cube.execute_action("E'")
-            return cube
-        elif move == "u'":
-            cube = self.execute_action("U'")
-            cube = cube.execute_action("E")
-            return cube
-        elif move == "d":
-            cube = self.execute_action("D")
-            cube = cube.execute_action("E")
-            return cube
-        elif move == "d'":
-            cube = self.execute_action("D'")
-            cube = cube.execute_action("E'")
-            return cube
-        elif move == "f":
-            cube = self.execute_action("F")
-            cube = cube.execute_action("S")
-            return cube
-        elif move == "f'":
-            cube = self.execute_action("F'")
-            cube = cube.execute_action("S'")
-            return cube
-        elif move == "b":
-            cube = self.execute_action("B")
-            cube = cube.execute_action("S'")
-            return cube
-        elif move == "b'":
-            cube = self.execute_action("B'")
-            cube = cube.execute_action("S")
-            return cube                     
-        
-        # double joint moves
-        elif move == "r2":
-            cube = self.execute_action("r")
-            cube = cube.execute_action("r")
-            return cube
-        elif move == "l2":
-            cube = self.execute_action("l")
-            cube = cube.execute_action("l")
-            return cube
-        elif move == "u2":
-            cube = self.execute_action("u")
-            cube = cube.execute_action("u")
-            return cube
-        elif move == "d2":
-            cube = self.execute_action("d")
-            cube = cube.execute_action("d")
-            return cube
-        elif move == "f2":
-            cube = self.execute_action("f")
-            cube = cube.execute_action("f")
-            return cube
-        elif move == "b2":
-            cube = self.execute_action("b")
-            cube = cube.execute_action("b")
-            return cube           
-        
-        # cube rotations
-        elif move == "x":
-            cube = self.execute_action("r")
-            cube = cube.execute_action("L'")
-            return cube
-        elif move == "x'":
-            cube = self.execute_action("r'")
-            cube = cube.execute_action("L")
-            return cube
-        elif move == "y":
-            cube = self.execute_action("u")
-            cube = cube.execute_action("D'")
-            return cube
-        elif move == "y'":
-            cube = self.execute_action("u'")
-            cube = cube.execute_action("D")
-            return cube
-        elif move == "z":
-            cube = self.execute_action("f")
-            cube = cube.execute_action("B'")
-            return cube
-        elif move == "z'":
-            cube = self.execute_action("f'")
-            cube = cube.execute_action("B")
-            return cube                                        
-        
-        return Cube(new_state)
+        ACTIONS[action](state, max_idx)  # update state by executing the matching function in ACTIONS dict
+        return Cube(state)                                
     
     
     def execute_action_sequence(self, actions):
-        new_state = deepcopy(self.state)
+        """simulates a series of actions on the cube (turns or rotations)
+
+        Args:
+            actions (string list): sequence of actions to simulate on the cube
+
+        Returns:
+            Cube: a Cube reflecting the new state after the sequence is performed
+        """
+        state = deepcopy_state(self.state)
         
-        cube = Cube(new_state)
+        cube = Cube(state)
         for action in actions:
             cube = cube.execute_action(action)
         return cube
@@ -460,19 +187,21 @@ class Cube:
     
 
 class Node:
-    def __init__(self, state, parent, action):
-        self.state = state
+    """ nodes holding a cube. used for expansion in search
+    """
+    def __init__(self, cube, parent, action):
+        self.cube = cube
         self.parent = parent
         self.action = action
 
     # Returns string representation of the state
     def __repr__(self):
-        return str(self.state.state)
+        return str(self.cube.state)
 
 
     # Comparing current node with other node. They are equal if states are equal
     def __eq__(self, other):
-        return self.state.state == other.state.state
+        return self.cube.state == other.cube.state
 
     
     def __ne__(self, other):   
@@ -480,14 +209,30 @@ class Node:
 
 
     def __hash__(self):
-        return hash(str(self.state.state))
+        return hash(str(self.cube.state))
         
 
-def deepcopy(state):
+def deepcopy_state(state):
+    """performs a deepcopy on the a 3d list cube state
+
+    Args:
+        state (3d list): a cube state we want to copy
+        
+    Returns:
+        3d list: a deep copy of state
+    """
     return [[[x for x in y] for y in z] for z in state]
 
 
 def get_children(parent_node):
+    """expands a node by generating child nodes for all potential moves
+
+    Args:
+        parent_node (Node): node to expand from
+
+    Returns:
+        Node list: list of expanded nodes
+    """
     children = []
     actions = ["R", "R'", "U", "U'", "F", "F'", "L", "L'", "D", "D'", "B", "B'"]
     
@@ -501,15 +246,22 @@ def get_children(parent_node):
         else:
             actions.remove(parent_node.action[0] + "'")    
 
-    
     for action in actions:
-        child_state = parent_node.state.execute_action(action)
+        child_state = parent_node.cube.execute_action(action)
         child_node = Node(child_state, parent_node, action)
         children.append(child_node)
     return children
 
 
 def string_to_state(string):
+    """ convert a single string into a cube state 
+
+    Args:
+        string (string): a string representing cube state
+
+    Returns:
+        3d list: a useable cube state
+    """
     state_1d = list(string.split(' '))
     size = int(sqrt(len(state_1d) // 6))
     state_3d = []
@@ -525,6 +277,14 @@ def string_to_state(string):
 
 
 def pick_color(char):
+    """ match a char or num to it's color code
+
+    Args:
+        char (string/char or int): an identifier representing the color of a cube square
+
+    Returns:
+        string: an xterm-256 escape sequence used to print a colored bg square
+    """
     if char == 'R' or char == 4:
         return RED_BG
     elif char == 'G' or char == 1:
@@ -539,61 +299,34 @@ def pick_color(char):
         return WHITE_BG
 
 
-def find_path(node):	
-	path = []	
-	while node.parent is not None:
-		path.append(node.action)
-		node = node.parent
-	path.reverse()
-	return path
+def find_path(node):
+    """ find the path taken from the root node to here
 
+    Args:
+        node (Node): the child node at the end of the path
 
-def cost(root_node, node):
-    g = 0
-    while node is not root_node:
-        g = g + 0.25
+    Returns:
+        string list: path taken from the root node to the child node as actions
+    """
+    path = []	
+    while node.parent is not None:
+        path.append(node.action)
         node = node.parent
-    return g
-
-
-def rot90(arr):
-    rotated = zip(*arr[::-1])
-    return list([list(elem) for elem in rotated])
-
-    
-def rot270(arr):
-    rotated = zip(*arr)
-    return list([list(elem) for elem in rotated][::-1])
-       
-
-def astar(root_node, h_func):
-    frontier = [root_node]
-    seen = set()
-    f_scores = [h_func(root_node)]
-    while len(frontier) > 0:
-        min_idx = f_scores.index(min(f_scores))
-        cur_node = frontier.pop(min_idx)
-        f_scores.pop(min_idx)
-        seen.add(cur_node)
-        #cur_node.state.display_colors()
-        #print(find_path(cur_node))
-        if h_func(cur_node) == 0:
-            path = find_path(cur_node)
-            return path
-        for child in get_children(cur_node):
-            if child in seen:
-                continue
-            elif child not in frontier:
-                frontier.append(child)
-                f_scores.append(h_func(child) + cost(root_node, child))
-
-            #else:
-                #same_node = frontier[frontier.index(child)]
-                #if cost(root_node, child) < cost(root_node, same_node):
-                #    same_node.parent = child.parent   
+    path.reverse()
+    return path
                     
         
 def idas(root_node, h_func):
+    """ perform an IDA* search to find a path to a goal state
+
+    Args:
+        root_node (Node): the Node to start the search from
+        h_func (function): a heuristic function
+
+    Returns:
+        string list: the path taken from root to solution as actions
+        false: if no path found after expanding all possible nodes
+    """
     bound = h_func(root_node)
     path = [root_node]
     while True:
@@ -606,33 +339,25 @@ def idas(root_node, h_func):
         else:
             bound = t   # increase bound to lowest neighbor's f
    
-   
-def idas_repeat(root_node, h_func):
-    bound = h_func(root_node)
-    path = [root_node]
-    paths = [[],[]]
-    g = 0
-    while len(paths) < 84:
-        t = idas_repeat_search(path, g, bound, h_func, paths)
-        if t == "FOUND":
-            path_taken = find_path(path[-1])
-            paths[0].append(path[-1])
-            paths[1].append(path_taken)
-            print(path_taken)
-            path[-1].state.display_colors()
-            # g = len(paths[1][-1]) * 8
-            path = [root_node]
-        elif t == float('inf'):
-            return False  # not found
-        else:
-            bound = t   # increase bound to lowest neighbor's f
-
 
 def idas_search(path, g, bound, h_func):
+    """recursive function to perform the search in IDA*
+
+    Args:
+        path (list): a stack that keeps track of the action path taken from the root to here
+        g (int): the cost it took to move from the root node to here
+        bound (int): the fscore threshold for nodes we are expanding
+        h_func (function): a heuristic function
+
+    Returns:
+        int/float or string: "FOUND" returned if we reached solution
+                             "inf" returned if no solution
+                             an fscore to update the bound if we have more nodes
+    """
     node = path[-1]
     f = h_func(node) + g
     #time.sleep(1)
-    #node.state.display_colors()
+    #node.cube.display_colors()
     #print(find_path(node))
     #print(h_func(node))
     if h_func(node) == 0:  # if reached goal state
@@ -652,57 +377,9 @@ def idas_search(path, g, bound, h_func):
     return minimum
 
 
-def idas_repeat_search(path, g, bound, h_func, paths):
-    node = path[-1]
-    f = h_func(node) + g
-    #time.sleep(1)
-    #node.state.display_colors()
-    #print(find_path(node))
-    #print(h_func(node))
-    if h_func(node) == 0 and node not in paths[0]:  # if reached goal state
-        return "FOUND"
-    if f > bound:  # if we are over the ids bound
-        return f
-    minimum = float('inf')
-    for child in get_children(node):  # for each child of this node
-        if child not in path:
-            path.append(child)
-            t = idas_repeat_search(path, g + 1, bound, h_func, paths)
-            if t == "FOUND":  # if reached goal state
-                return "FOUND"
-            if t < minimum:  # if we have a new bound < inf
-                minimum = t
-            path.pop()
-    return minimum
-
-
-def bfs(root_node, goal_func):
-    frontier = deque([root_node])
-    explored = set()
-    paths = []
-    while len(frontier) > 0 or len(paths) < 72:
-        cur_node = frontier.popleft()
-        explored.add(cur_node)
-        #print(find_path(cur_node))
-        if goal_func(cur_node) == 0:
-            path = find_path(cur_node)
-            # return path
-            paths.append(path)
-            print(path)
-            cur_node.state.display_colors()
-        for child in get_children(cur_node):
-            if child in explored:
-                continue
-            else:
-                frontier.append(child)
-    print("frontier empty")	
-    return paths
-    #return False
-
-
 def h_cross(node):
     h = 0
-    state = node.state.state
+    state = node.cube.state
     bottom = state[0][1][1]
     
     # white cross perfect
@@ -730,7 +407,7 @@ def h_cross(node):
 
 def h_layer1_1(node):
     h = 0
-    state = node.state.state
+    state = node.cube.state
     bottom = state[0][1][1]
     
     # white cross perfect
@@ -745,13 +422,13 @@ def h_layer1_1(node):
 
     # top has white edges?
     if state[5][0][1] == bottom:
-        h = h + 1 
+        h = h + 2
     if state[5][2][1] == bottom:
-        h = h + 1
+        h = h + 2
     if state[5][1][0] == bottom:
-        h = h + 1
+        h = h + 2
     if state[5][1][2] == bottom:
-        h = h + 1
+        h = h + 2
     
     # 1 corner
     bad_corners = 0
@@ -782,7 +459,7 @@ def h_layer1_1(node):
     
 def h_layer1_2(node):
     h = 0
-    state = node.state.state
+    state = node.cube.state
     bottom = state[0][1][1]
     
     # white cross perfect
@@ -837,7 +514,7 @@ def h_layer1_2(node):
     
 def h_layer1_3(node):
     h = 0
-    state = node.state.state
+    state = node.cube.state
     bottom = state[0][1][1]
     
     # white cross perfect
@@ -893,7 +570,7 @@ def h_layer1_3(node):
 
 def h_layer1_4(node):
     h = 0
-    state = node.state.state
+    state = node.cube.state
     bottom = state[0][1][1]
     
     # white cross perfect
@@ -960,175 +637,11 @@ def h_layer1_4(node):
     if state[1][1][0] == state[4][1][1] and state[4][1][2] == state[1][1][1]:
         h = h + 2
     
-    return h * 2
-
-
-def h_oll(node):
-    h = 0
-    state = node.state.state
-    bottom = state[0][1][1]
-    top = state[5][1][1]
-    right = state[2][1][1]
-    left = state[4][1][1]
-    front = state[1][1][1]
-    back = state[3][1][1]
-    
-    # bottom cross perfect
-    if state[1][2][1] != front or state[0][0][1] != bottom:
-        h = h + 1
-    if state[2][2][1] != right or state[0][1][2] != bottom:
-        h = h + 1
-    if state[3][2][1] != back or state[0][2][1] != bottom:
-        h = h + 1
-    if state[4][2][1] != left or state[0][1][0] != bottom:
-        h = h + 1
-    
-    # bottom corners
-    if (state[0][0][0] != bottom or state[4][2][2] != left\
-            or state[1][2][0] != front\
-            #or state[4][1][2] != left or state[1][1][0] != front
-            ):
-        h = h + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != front\
-            or state[2][2][0] != right\
-            #or state[1][1][2] != front or state[2][1][0] != right
-            ):
-        h = h + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != right\
-            or state[3][2][0] != back\
-            #or state[2][1][2] != right or state[3][1][0] != back
-            ):
-        h = h + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != back\
-            or state[4][2][0] != left\
-            #or state[3][1][2] != back or state[4][1][0] != left
-            ):
-        h = h + 1
-        
-    # middle edges
-    if state[4][1][2] != left or state[1][1][0] != front:
-        h = h + 1  
-    if state[1][1][2] != front or state[2][1][0] != right:
-        h = h + 1    
-    if state[2][1][2] != right or state[3][1][0] != back:
-        h = h + 1    
-    if state[3][1][2] != back or state[4][1][0] != left:
-        h = h + 1
-        
-    # top cross kinda
-    if state[5][0][1] != top:
-        h = h + 1
-    if state[5][1][2] != top:
-        h = h + 1
-    if state[5][2][1] != top:
-        h = h + 1
-    if state[5][1][0] != top:
-        h = h + 1    
-        
-    # top corners 
-    if (state[5][0][0] != top):
-        h = h + 1
-    if  (state[5][0][2] != top):
-        h = h + 1
-    if (state[5][2][2] != top):
-        h = h + 1
-    if (state[5][2][0] != top):
-        h = h + 1
-
-    return h * 2        
+    return h*2     
    
-   
-def h_pll(node):
-    h = 0
-    state = node.state.state
-    bottom = state[0][1][1]
-    top = state[5][1][1]
-    right = state[2][1][1]
-    left = state[4][1][1]
-    front = state[1][1][1]
-    back = state[3][1][1]
-    
-    # bottom cross perfect
-    if state[1][2][1] != front or state[0][0][1] != bottom:
-        h = h + 1
-    if state[2][2][1] != right or state[0][1][2] != bottom:
-        h = h + 1
-    if state[3][2][1] != back or state[0][2][1] != bottom:
-        h = h + 1
-    if state[4][2][1] != left or state[0][1][0] != bottom:
-        h = h + 1
-    
-    # bottom corners
-    if (state[0][0][0] != bottom or state[4][2][2] != left\
-            or state[1][2][0] != front\
-            #or state[4][1][2] != left or state[1][1][0] != front
-            ):
-        h = h + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != front\
-            or state[2][2][0] != right\
-            #or state[1][1][2] != front or state[2][1][0] != right
-            ):
-        h = h + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != right\
-            or state[3][2][0] != back\
-            #or state[2][1][2] != right or state[3][1][0] != back
-            ):
-        h = h + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != back\
-            or state[4][2][0] != left\
-            #or state[3][1][2] != back or state[4][1][0] != left
-            ):
-        h = h + 1
-        
-    # middle edges
-    if state[4][1][2] != left or state[1][1][0] != front:
-        h = h + 1  
-    if state[1][1][2] != front or state[2][1][0] != right:
-        h = h + 1    
-    if state[2][1][2] != right or state[3][1][0] != back:
-        h = h + 1    
-    if state[3][1][2] != back or state[4][1][0] != left:
-        h = h + 1
-        
-    if state[1][2][1] != front or state[0][0][1] != bottom:
-        h = h + 1
-    if state[2][2][1] != right or state[0][1][2] != bottom:
-        h = h + 1
-    if state[3][2][1] != back or state[0][2][1] != bottom:
-        h = h + 1
-    if state[4][2][1] != left or state[0][1][0] != bottom:
-        h = h + 1
-        
-        
-    # top cross kinda
-    if state[5][0][1] != top or state[1][0][1] != front:
-        h = h + 1
-    if state[5][1][2] != top or state[2][0][1] != right:
-        h = h + 1
-    if state[5][2][1] != top or state[3][0][1] != back:
-        h = h + 1
-    if state[5][1][0] != top or state[4][0][1] != left:
-        h = h + 1    
-        
-    # top corners 
-    if state[5][0][0] != top or state[3][0][2] != back \
-        or state[4][0][0] != left:
-        h = h + 1
-    if  state[5][0][2] != top or state[3][0][0] != back \
-        or state[2][0][2] != right:
-        h = h + 1
-    if state[5][2][2] != top or state[1][0][2] != front \
-        or state[2][0][0] != right:
-        h = h + 1
-    if state[5][2][0] != top or state[4][0][2] != left \
-        or state[1][0][0] != front:
-        h = h + 1
 
-    return h * 2
-
-
-def goal_test_OLL(node):
-    state = node.state.state
+def goal_test_oll(node):
+    state = node.cube.state
     
     bottom = state[0][1][1]
     top = state[5][1][1]
@@ -1159,7 +672,7 @@ def goal_test_OLL(node):
     
     
 def goal_test_solved(node):
-    state = node.state.state
+    state = node.cube.state
     
     bottom = state[0][1][1]
     top = state[5][1][1]
@@ -1198,76 +711,38 @@ def goal_test_solved(node):
 def test_actions():
     cube = Cube(solved_state_ints)
     root = Node(cube, None, None)
-    root.state.display_colors()
+    root.cube.display_colors()
     
-    # for action in ACTIONS:
-    #     print("Solved:")
-    #     root.state.display_colors()
-    #     print(action, ":")
-    #     root.state.execute_action(action).display_colors()
-    
-    root.state.execute_action("R").display_colors()
-    root.state.execute_action("R'").display_colors()
-    root.state.execute_action("L").display_colors()
-    root.state.execute_action("L'").display_colors()
-    root.state.execute_action("U").display_colors()
-    root.state.execute_action("U'").display_colors()
-    root.state.execute_action("D").display_colors()
-    root.state.execute_action("D'").display_colors()
-    root.state.execute_action("F").display_colors()
-    root.state.execute_action("F'").display_colors()
-    root.state.execute_action("B").display_colors()
-    root.state.execute_action("B'").display_colors()
-    
-    root.state.execute_action("M").display_colors()
-    root.state.execute_action("M'").display_colors()
-    root.state.execute_action("E").display_colors()
-    root.state.execute_action("E'").display_colors()
-    root.state.execute_action("S").display_colors()
-    root.state.execute_action("S'").display_colors()
-    
-    root.state.execute_action("r").display_colors()
-    root.state.execute_action("r'").display_colors()
-    root.state.execute_action("l").display_colors()
-    root.state.execute_action("l'").display_colors()
-    root.state.execute_action("u").display_colors()
-    root.state.execute_action("u'").display_colors()
-    root.state.execute_action("d").display_colors()
-    root.state.execute_action("d'").display_colors()
-    root.state.execute_action("f").display_colors()
-    root.state.execute_action("f'").display_colors()
-    root.state.execute_action("b").display_colors()
-    root.state.execute_action("b'").display_colors()
-
-    root.state.execute_action("x").display_colors()
-    root.state.execute_action("x'").display_colors()
-    root.state.execute_action("y").display_colors()
-    root.state.execute_action("y'").display_colors()
-    root.state.execute_action("z").display_colors()
-    root.state.execute_action("z'").display_colors()
+    for action in ACTIONS:
+        # print("Solved:")
+        # root.cube.display_colors()
+        print(action, ":")
+        root.cube.execute_action(action).display_colors()
 
 
 def test_alg_oll(node, alg):
-    test_node = Node(node.state.execute_action_sequence(alg), None, None)
-    if goal_test_OLL(test_node):
+    test_node = Node(node.cube.execute_action_sequence(alg), None, None)
+    if goal_test_oll(test_node):
         return alg
     alg.insert(0, "U")
-    test_node = Node(node.state.execute_action_sequence(alg), None, None)
-    if goal_test_OLL(test_node):
+    test_node = Node(node.cube.execute_action_sequence(alg), None, None)
+    if goal_test_oll(test_node):
         return alg
     alg[0] = "U'"
-    test_node = Node(node.state.execute_action_sequence(alg), None, None)
-    if goal_test_OLL(test_node):
+    test_node = Node(node.cube.execute_action_sequence(alg), None, None)
+    if goal_test_oll(test_node):
         return alg
     alg[0] = "U2"
-    test_node = Node(node.state.execute_action_sequence(alg), None, None)
-    if goal_test_OLL(test_node):
+    test_node = Node(node.cube.execute_action_sequence(alg), None, None)
+    if goal_test_oll(test_node):
         return alg
     
     return False
     
 
 def solve_oll(node):
+    if goal_test_oll(node):
+        return []
     try:
         with open("oll.txt", 'r') as f:
             lines = f.read().splitlines()
@@ -1281,64 +756,65 @@ def solve_oll(node):
     except IOError:
         print("There was an error reading oll.txt.")
         exit()
-        
+           
         
 def test_alg_pll(node, alg):
-    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_solved(test_node):
         return alg
-    elif goal_test_solved(Node(test_node.state.execute_action("U"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U"), None, None)):
         return alg + ["U"]
-    elif goal_test_solved(Node(test_node.state.execute_action("U'"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U'"), None, None)):
         return alg + ["U'"]    
-    elif goal_test_solved(Node(test_node.state.execute_action("U2"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U2"), None, None)):
         return alg + ["U2"]        
     
     alg.insert(0, "U")
-    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_solved(test_node):
         return alg
-    elif goal_test_solved(Node(test_node.state.execute_action("U"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U"), None, None)):
         return alg + ["U"]
-    elif goal_test_solved(Node(test_node.state.execute_action("U'"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U'"), None, None)):
         return alg + ["U'"]    
-    elif goal_test_solved(Node(test_node.state.execute_action("U2"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U2"), None, None)):
         return alg + ["U2"]
     
     alg[0] = "U2"
-    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_solved(test_node):
         return alg
-    elif goal_test_solved(Node(test_node.state.execute_action("U"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U"), None, None)):
         return alg + ["U"]
-    elif goal_test_solved(Node(test_node.state.execute_action("U'"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U'"), None, None)):
         return alg + ["U'"]    
-    elif goal_test_solved(Node(test_node.state.execute_action("U2"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U2"), None, None)):
         return alg + ["U2"]      
     
     alg[0] = "U'"
-    test_node = Node(node.state.execute_action_sequence(alg), None, None)
+    test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_solved(test_node):
         return alg
-    elif goal_test_solved(Node(test_node.state.execute_action("U"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U"), None, None)):
         return alg + ["U"]
-    elif goal_test_solved(Node(test_node.state.execute_action("U'"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U'"), None, None)):
         return alg + ["U'"]    
-    elif goal_test_solved(Node(test_node.state.execute_action("U2"), None, None)):
+    elif goal_test_solved(Node(test_node.cube.execute_action("U2"), None, None)):
         return alg + ["U2"]  
     
     return False
-        
+
+
 def solve_pll(node):
     if goal_test_solved(node):
         return []
     try:
         with open("pll.txt", 'r') as f:
             lines = f.read().splitlines()
-            #lines = [l.split(',') for l in lines]
-            for l in lines:
-                result = test_alg_pll(node, l.split())
-                if result != False:
+            # lines = [l.split(',') for l in lines]
+            for line in lines:
+                result = test_alg_pll(node, line.split())
+                if result:
                     f.close()
                     return result
             return False
@@ -1346,8 +822,67 @@ def solve_pll(node):
         print("There was an error reading oll.txt.")
         exit()
 
-#solved_state = string_to_state("W"+" W"*8+" G"*9+" O"*9+" B"*9 +" R"*9+" Y"*9)
-solved_state_ints = string_to_state('0'+' 0'*8+" 1"*9+" 2"*9+" 3"*9 +" 4"*9+" 5"*9)
+
+def solve(node):
+    cross_path = idas(node, h_cross)
+    node.cube = node.cube.execute_action_sequence(cross_path)
+
+    f2l_path1 = idas(node, h_layer1_1)
+    node.cube = node.cube.execute_action_sequence(f2l_path1)
+    f2l_path2 = idas(node, h_layer1_2)
+    node.cube = node.cube.execute_action_sequence(f2l_path2)
+    f2l_path3 = idas(node, h_layer1_3)
+    node.cube = node.cube.execute_action_sequence(f2l_path3)
+    f2l_path4 = idas(node, h_layer1_4)
+    node.cube = node.cube.execute_action_sequence(f2l_path4)
+
+    oll_path = solve_oll(node)
+    node.cube = node.cube.execute_action_sequence(oll_path)
+    pll_path = solve_pll(node)
+    node.cube = node.cube.execute_action_sequence(pll_path)
+
+    solve_path = cross_path + f2l_path1 + f2l_path2 + f2l_path3 \
+        + f2l_path4 + oll_path + pll_path
+
+    return solve_path, node
+
+
+def display_menu(node, scramble_sequence="", user_moves="",
+                 solution_sequence="", time_taken="0.00", seed=""):
+    clear()
+    if seed is None:
+        seed = ""
+    print("Random seed       : ", seed)
+    print("Current scramble  : ", " ".join(scramble_sequence))
+    print("Move History      : ", " ".join(user_moves))
+    print("Solution sequence :  ", end="")
+    for idx, move in enumerate(solution_sequence):
+        if idx % 25 == 0 and idx > 0:
+            print()
+            print("                     ", end="")
+        print(move, end=" ")
+    print()
+    print()
+    print("Time of last operation: %.2f seconds " % time_taken)
+    print()
+
+    node.cube.display_colors()
+
+    print("1. Random Scramble")
+    print("2. Enter Moves")
+    print("3. Computer Solve")
+    print("4. Set Random Seed")
+    print("5. Remove Random Seed")
+
+    # print()
+    # print("6. Watch Solve (Work in progress)")
+
+    print()
+    print("Enter a number from above:  ", end="")
+
+
+solved_state_ints = string_to_state('0'+' 0'*8+" 3"*9+" 4"*9+" 1"*9+" 2"*9+" 5"*9)
+
 for i in range(6):
     for j in range(3):
         for k in range(3):
@@ -1356,101 +891,64 @@ for i in range(6):
 
 def main():
     start_state = solved_state_ints
-    scramble_seq = []
-    
+    scramble_sequence = []
+    user_moves = []
+    solution_sequence = []
+    seed = None
+    time_taken = 0.0
+
     # gen root and set to start puzzle
     cube = Cube(start_state)
     root = Node(cube, None, None)
-    root.state.display_colors()
-    
-    start_time = time.time()
 
-    # feed custom scramble
-    # root.state = root.state.execute_action_sequence("F' U' U' B L' F' R D' B' L B' B' U' F' D' B R' B' D' R' L D F L' F")
-    
-    
-    # scramble puzzle
-    root.state, scramble_seq = root.state.scramble()
-    print(" ".join(scramble_seq), '\n')
-    
-    
-    root.state.display_colors()
-    
-    solve_sequence = []
-    
-    cross_path = idas(root, h_cross)
-    end_time = time.time() - start_time
-    print(end_time)
-    for move in cross_path:
-        root.state = root.state.execute_action(move)
-    print(" ".join(cross_path), "\n")
-    root.state.display_colors()
-    solve_sequence.append(cross_path)
+    while True:
+        display_menu(root, scramble_sequence, user_moves, solution_sequence, time_taken,
+                     seed)
+        if seed is not None:
+            random.seed(seed)
+        else:
+            random.seed()
 
-    layer1_1_path = idas(root, h_layer1_1)
-    for move in layer1_1_path:
-        root.state = root.state.execute_action(move)
-    end_time = time.time() - start_time
-    print(end_time)
-    print(" ".join(layer1_1_path), "\n")
-    root.state.display_colors()
-    solve_sequence.append(layer1_1_path)
-    
-    layer1_2_path = idas(root, h_layer1_2)
-    for move in layer1_2_path:
-        root.state = root.state.execute_action(move)
-    end_time = time.time() - start_time
-    print(end_time)
-    print(" ".join(layer1_2_path), "\n")    
-    root.state.display_colors()
-    solve_sequence.append(layer1_2_path)
-    
-    layer1_3_path = idas(root, h_layer1_3)
-    for move in layer1_3_path:
-        root.state = root.state.execute_action(move)
-    end_time = time.time() - start_time
-    print(end_time) 
-    print(" ".join(layer1_3_path), "\n")
-    root.state.display_colors()
-    solve_sequence.append(layer1_3_path)
-    
-    layer1_4_path = idas(root, h_layer1_4)
-    for move in layer1_4_path:
-        root.state = root.state.execute_action(move)
-    end_time = time.time() - start_time
-    print(end_time)
-    print(" ".join(layer1_4_path), "\n")
-    root.state.display_colors()
-    solve_sequence.append(layer1_4_path)
+        command = input()
+        start_time = time.process_time()
 
-    oll_path = solve_oll(root)
-    for move in oll_path:
-        root.state = root.state.execute_action(move)
-    end_time = time.time() - start_time
-    print(end_time)
-    print(" ".join(oll_path), "\n")
-    root.state.display_colors()
-    solve_sequence.append(oll_path)
-    
-    
-    full_path = solve_pll(root)
-    for move in full_path:
-        root.state = root.state.execute_action(move)
-    end_time = time.time() - start_time
-    print(end_time)
-    print(" ".join(full_path), "\n")
-    root.state.display_colors()
-    solve_sequence.append(full_path)
-    
-    print("\nScramble:    " + " ".join(scramble_seq) + "\n")
-    solve_seq_str = " ".join([" ".join(x) for x in solve_sequence])
-    print("Full solve: ", solve_seq_str)
-    
-    
+        if command == '1':
+            root.cube, scramble_sequence = Node(Cube(start_state), None, None).cube.scramble()
+            user_moves = []
+        elif command == '2':
+            print("Enter a space separated move sequence:  ", end="")
+            raw_sequence = input()
+            sequence = raw_sequence.split()
+            root.cube = root.cube.execute_action_sequence(sequence)
+            user_moves.extend(sequence)
+        elif command == '3':
+            print()
+            print("Solving...")
+            solution_sequence, root = solve(root)
+        elif command == '4':
+            print("Enter a seed integer: ", end="")
+            seed = int(input())
+        elif command == '5':
+            seed = None
+
+        # elif command == '6':
+        #     print()
+        #     print("Finding Solve Sequence...")
+        #     solution_sequence, root = solve(root)
+
+        command_list = command.split()
+        if set(command_list).issubset(set(ACTIONS)):
+            root.cube = root.cube.execute_action_sequence(command_list)
+            user_moves.extend(command_list)
+
+        end_time = time.process_time()
+        time_taken = end_time - start_time
+
+
 if __name__ == '__main__':
     main()
     
-    #cProfile.run('main()', 'restats')
-    #p = pstats.Stats('restats')
-    #p.strip_dirs().sort_stats(SortKey.TIME).print_stats()
+    # cProfile.run('main()', 'restats')
+    # p = pstats.Stats('restats')
+    # p.strip_dirs().sort_stats(SortKey.TIME).print_stats()
 

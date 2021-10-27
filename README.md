@@ -66,8 +66,7 @@ Attempts algorithms read from pll.txt. The 21 algorithms cover all cases when po
 None
 
 ## Roadmap
-- [ ] Add a menu loop
+- [x] Add a menu loop
 - [ ] Add a GUI
 - [ ] Add a changelog
 - [ ] Improve F2L search heuristics.
-- [ ] Improve code documentation

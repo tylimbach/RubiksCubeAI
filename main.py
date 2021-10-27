@@ -6,7 +6,7 @@ Main script for Rubik's Cube Solver
 __author__ = "Tyler Limbach"
 
 # moves includes all the functions that modify states.
-from moves import ACTIONS
+from moves import ACTIONS_3x3
 
 from math import sqrt as sqrt
 import random
@@ -49,9 +49,9 @@ class Cube:
     def display_text(self):
         """ prints to terminal a text representation of the cube
         
-        the print output represents a physical cube's faces as if
-        they were unfolded away from the middle (front) face into 2d space
-        numbers 1-6 represent colors
+            the print output represents a physical cube's faces as if
+            they were unfolded away from the middle (front) face into 2d space
+            numbers 1-6 represent colors
         """         
         output = ""
         for i in range(self.size):
@@ -116,7 +116,7 @@ class Cube:
                 x -> clockwise rotation around x axis
                 
                 see README.txt for more detailed notation
-                ACTIONS is a dictionary that maps action to the correct function from moves.py
+                ACTIONS_3x3 is a dictionary that maps action to the correct function from moves.py
 
         Returns:
             Cube: a Cube reflecting the new state after the action is performed
@@ -124,7 +124,7 @@ class Cube:
         state = deepcopy_state(self.state)        
         max_idx = self.size - 1
 
-        ACTIONS[action](state, max_idx)
+        ACTIONS_3x3[action](state, max_idx)
         return Cube(state)
 
     def execute_action_sequence(self, actions):
@@ -746,7 +746,7 @@ def test_actions():
     root = Node(cube, None, None)
     root.cube.display_colors()
     
-    for action in ACTIONS:
+    for action in ACTIONS_3x3:
         # print("Solved:")
         # root.cube.display_colors()
         print(action, ":")
@@ -911,7 +911,7 @@ def solve(node):
 
 def display_menu(old_node, node, scramble_sequence="", user_moves="",
                  solution_sequence="", time_taken="0.00", seed="",
-                 help_toggle=False):
+                 help_toggle=False, is_text_mode=False):
     """ Clear console and display the updated menu
 
     :param old_node: a Node containing the "previous" cube state
@@ -922,13 +922,14 @@ def display_menu(old_node, node, scramble_sequence="", user_moves="",
     :param time_taken: cpu runtime of previous command
     :param seed: optional random seed integer
     :param help_toggle: boolean to toggle help menu for moves
+    :param is_text_mode: boolean to toggle text vs color display mode
     """
     clear()
     if seed is None:
         seed = ""
 
     if help_toggle:
-        moves = " ".join(ACTIONS)
+        moves = " ".join(ACTIONS_3x3)
         print("--------------- Move Options ----------------")
         print("Face/Slice Turns : R, L, U, D, F, B, M, E, S")
         print("Wide Turns       : r, l, u, d, f, b")
@@ -946,11 +947,18 @@ def display_menu(old_node, node, scramble_sequence="", user_moves="",
     print("5. Remove Random Seed")
     print()
     print("H. Toggle Move Help")
+    print("T. Toggle Text Mode")
     print("Q. Quit")
     print("------------------ Before -------------------")
-    old_node.cube.display_colors()
+    if is_text_mode:
+        old_node.cube.display_text()
+    else:
+        old_node.cube.display_colors()
     print("------------------ After --------------------")
-    node.cube.display_colors()
+    if is_text_mode:
+        node.cube.display_text()
+    else:
+        node.cube.display_colors()
     print("------------------- Info --------------------")
 
     print("Random seed        : ", seed)
@@ -985,6 +993,7 @@ def main():
     seed = None
     time_taken = 0.0
     help_toggle = False
+    text_display_toggle = False
 
     # gen root and set to start puzzle
     solved_cube = Cube(start_state)
@@ -993,7 +1002,7 @@ def main():
 
     while True:
         display_menu(old_root, root, scramble_sequence, user_moves, solution_sequence, time_taken,
-                     seed, help_toggle)
+                     seed, help_toggle, text_display_toggle)
         if seed is not None:
             random.seed(int(seed))
         else:
@@ -1011,6 +1020,7 @@ def main():
             old_root = Node(solved_cube, None, None)
             root.cube, scramble_sequence = Node(Cube(start_state), None, None).cube.scramble()
             user_moves = []
+            solution_sequence = []
         elif command == '2':
             old_root = Node(root.cube, None, None)
             print("Enter a space separated move sequence:  ", end="")
@@ -1029,9 +1039,10 @@ def main():
             seed = None
         elif command == 'Q' or command == 'q':
             exit()
-
+        elif command == 'T' or command == "t":
+            text_display_toggle = not text_display_toggle
         command_list = command.split()
-        if set(command_list).issubset(set(ACTIONS)):
+        if set(command_list).issubset(set(ACTIONS_3x3)):
             old_root = Node(root.cube, None, None)
             root.cube = root.cube.execute_action_sequence(command_list)
             user_moves.extend(command_list)

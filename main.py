@@ -37,6 +37,7 @@ GREEN_BG = "\033[48;5;10m  \033[0;0m" # 2
 BLUE_BG = "\033[48;5;12m  \033[0;0m" # 21
 WHITE_BG = "\033[48;5;254m  \033[0;0m"
 
+
 class Cube:
     """ data structure to represent a rubiks cube 
     """
@@ -44,7 +45,6 @@ class Cube:
     def __init__(self, state):
         self.size = int(len(state[0]))
         self.state = state
-
 
     def display_text(self):
         """ prints to terminal a text representation of the cube
@@ -123,11 +123,10 @@ class Cube:
         """
         state = deepcopy_state(self.state)        
         max_idx = self.size - 1
-        
-        ACTIONS[action](state, max_idx)  # update state by executing the matching function in ACTIONS dict
-        return Cube(state)                                
-    
-    
+
+        ACTIONS[action](state, max_idx)
+        return Cube(state)
+
     def execute_action_sequence(self, actions):
         """simulates a series of actions on the cube (turns or rotations)
 
@@ -342,9 +341,10 @@ def idas_search(path, g, bound, h_func):
                              an fscore to update the bound if we have more nodes
     """
     node = path[-1]
-    f = h_func(node) + g
+    h = h_func(node)
+    f = h + g
 
-    if h_func(node) == 0:  # if reached goal state
+    if h == 0:  # if reached goal state
         return "FOUND"
     if f > bound:  # if we are over the ids bound
         return f
@@ -362,58 +362,121 @@ def idas_search(path, g, bound, h_func):
 
 
 def h_cross(node):
+    """ Determine a heuristic for the bottom cross
+
+    :param node: the Node to solve the cross for
+    :return: a heuristic
+    """
     h = 0
     state = node.cube.state
     bottom = state[0][1][1]
-    
+
     # white cross perfect
     if state[1][2][1] != state[1][1][1] or state[0][0][1] != bottom:
-        h = h + 1
+        h += 1
     if state[2][2][1] != state[2][1][1] or state[0][1][2] != bottom:
-        h = h + 1
+        h += 1
     if state[3][2][1] != state[3][1][1] or state[0][2][1] != bottom:
-        h = h + 1
+        h += 1
     if state[4][2][1] != state[4][1][1] or state[0][1][0] != bottom:
-        h = h + 1
+        h += 1
 
     # top has white edges?
     if state[5][0][1] == bottom:
-        h = h + 1 
+        h += 1
     if state[5][2][1] == bottom:
-        h = h + 1
+        h += 1
     if state[5][1][0] == bottom:
-        h = h + 1
+        h += 1
     if state[5][1][2] == bottom:
-        h = h + 1
-        
-    return h 
+        h += 1
+
+    return h
 
 
 def h_layer1_1(node):
+    """ Determine a heuristic fo1st F2L pair
+
+    :param node: the Node to solve F2L on
+    :return: a heuristic
+    """
     h = 0
     state = node.cube.state
     bottom = state[0][1][1]
-    
+
     # white cross perfect
     if state[1][2][1] != state[1][1][1] or state[0][0][1] != bottom:
-        h = h + 1
+        h += 1
     if state[2][2][1] != state[2][1][1] or state[0][1][2] != bottom:
-        h = h + 1
+        h += 1
     if state[3][2][1] != state[3][1][1] or state[0][2][1] != bottom:
-        h = h + 1
+        h += 1
     if state[4][2][1] != state[4][1][1] or state[0][1][0] != bottom:
-        h = h + 1
+        h += 1
 
     # top has white edges?
     if state[5][0][1] == bottom:
-        h = h + 2
+        h += 1
     if state[5][2][1] == bottom:
-        h = h + 2
+        h += 1
     if state[5][1][0] == bottom:
-        h = h + 2
+        h += 1
     if state[5][1][2] == bottom:
-        h = h + 2
-    
+        h += 1
+
+    # 1 corner
+    bad_corners = 0
+    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
+            or state[1][2][0] != state[1][1][1]
+            or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]):
+        bad_corners = bad_corners + 1
+    if (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
+            or state[2][2][0] != state[2][1][1]
+            or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]):
+        bad_corners = bad_corners + 1
+    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]
+            or state[3][2][0] != state[3][1][1]
+            or state[2][1][2] != state[2][1][1] or state[3][1][0] != state[3][1][1]):
+        bad_corners = bad_corners + 1
+    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]
+            or state[4][2][0] != state[4][1][1]
+            or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]):
+        bad_corners = bad_corners + 1
+    if bad_corners == 4:
+        h += 1
+    return h
+
+
+def h_layer1_2(node):
+    """ Determine a heuristic fo2nd F2L pair
+
+    :param node: the Node to solve F2L on
+    :return: a heuristic
+    """
+    h = 0
+    state = node.cube.state
+    bottom = state[0][1][1]
+
+    # white cross perfect
+    if state[1][2][1] != state[1][1][1] or state[0][0][1] != bottom:
+        h += 1
+    if state[2][2][1] != state[2][1][1] or state[0][1][2] != bottom:
+        h += 1
+    if state[3][2][1] != state[3][1][1] or state[0][2][1] != bottom:
+        h += 1
+    if state[4][2][1] != state[4][1][1] or state[0][1][0] != bottom:
+        h += 1
+
+    # top has white edges?
+    if state[5][0][1] == bottom:
+        h += 1
+    if state[5][2][1] == bottom:
+        h += 1
+    if state[5][1][0] == bottom:
+        h += 1
+    if state[5][1][2] == bottom:
+        h += 1
+
     # 1 corner
     bad_corners = 0
     if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
@@ -421,7 +484,7 @@ def h_layer1_1(node):
             or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
+    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
             or state[2][2][0] != state[2][1][1]
             or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]
             ):
@@ -437,90 +500,43 @@ def h_layer1_1(node):
             ):
         bad_corners = bad_corners + 1
     if bad_corners == 4:
-        h = h + 1
-    return h 
-    
-    
-def h_layer1_2(node):
-    h = 0
-    state = node.cube.state
-    bottom = state[0][1][1]
-    
-    # white cross perfect
-    if state[1][2][1] != state[1][1][1] or state[0][0][1] != bottom:
-        h = h + 1
-    if state[2][2][1] != state[2][1][1] or state[0][1][2] != bottom:
-        h = h + 1
-    if state[3][2][1] != state[3][1][1] or state[0][2][1] != bottom:
-        h = h + 1
-    if state[4][2][1] != state[4][1][1] or state[0][1][0] != bottom:
-        h = h + 1
+        h += 2
+    elif bad_corners == 3:
+        h += 1
 
-    # top has white edges?
-    if state[5][0][1] == bottom:
-        h = h + 1 
-    if state[5][2][1] == bottom:
-        h = h + 1
-    if state[5][1][0] == bottom:
-        h = h + 1
-    if state[5][1][2] == bottom:
-        h = h + 1
-    
-    # 1 corner
-    bad_corners = 0
-    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
-            or state[1][2][0] != state[1][1][1]
-            or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]
-            ):
-        bad_corners = bad_corners + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
-            or state[2][2][0] != state[2][1][1]
-            or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]
-            ):
-        bad_corners = bad_corners + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]
-            or state[3][2][0] != state[3][1][1]
-            or state[2][1][2] != state[2][1][1] or state[3][1][0] != state[3][1][1]
-            ):
-        bad_corners = bad_corners + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]
-            or state[4][2][0] != state[4][1][1]
-            or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]
-            ):
-        bad_corners = bad_corners + 1
-    if (bad_corners == 4):
-        h = h + 2
-    elif (bad_corners == 3):
-        h = h + 1
-    
-    return h 
-    
-    
+    return h
+
+
 def h_layer1_3(node):
+    """ Determine a heuristic fo3rd F2L pair
+
+    :param node: the Node to solve F2L on
+    :return: a heuristic
+    """
     h = 0
     state = node.cube.state
     bottom = state[0][1][1]
-    
+
     # white cross perfect
     if state[1][2][1] != state[1][1][1] or state[0][0][1] != bottom:
-        h = h + 1
+        h += 1
     if state[2][2][1] != state[2][1][1] or state[0][1][2] != bottom:
-        h = h + 1
+        h += 1
     if state[3][2][1] != state[3][1][1] or state[0][2][1] != bottom:
-        h = h + 1
+        h += 1
     if state[4][2][1] != state[4][1][1] or state[0][1][0] != bottom:
-        h = h + 1
+        h += 1
 
     # top has white edges?
     if state[5][0][1] == bottom:
-        h = h + 1 
+        h += 1
     if state[5][2][1] == bottom:
-        h = h + 1
+        h += 1
     if state[5][1][0] == bottom:
-        h = h + 1
+        h += 1
     if state[5][1][2] == bottom:
-        h = h + 1
-    
+        h += 1
+
     # 1 corner
     bad_corners = 0
     if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
@@ -543,88 +559,114 @@ def h_layer1_3(node):
             or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (bad_corners == 4):
-        h = h + 3
-    elif (bad_corners == 3):
-        h = h + 2
-    elif (bad_corners == 2):
-        h = h + 1
+    if bad_corners == 4:
+        h += 3
+    elif bad_corners == 3:
+        h += 2
+    elif bad_corners == 2:
+        h += 1
     return h * 2
- 
+
 
 def h_layer1_4(node):
+    """ Determine a heuristic fo4th (final) F2L pair
+
+    :param node: the Node to solve F2L on
+    :return: a heuristic
+    """
     h = 0
     state = node.cube.state
     bottom = state[0][1][1]
+    right = state[2][1][1]
+    left = state[4][1][1]
+    front = state[1][1][1]
+    back = state[3][1][1]
     
     # white cross perfect
     if state[1][2][1] != state[1][1][1] or state[0][0][1] != bottom:
-        h = h + 1
+        h += 1
     if state[2][2][1] != state[2][1][1] or state[0][1][2] != bottom:
-        h = h + 1
+        h += 1
     if state[3][2][1] != state[3][1][1] or state[0][2][1] != bottom:
-        h = h + 1
+        h += 1
     if state[4][2][1] != state[4][1][1] or state[0][1][0] != bottom:
-        h = h + 1
+        h += 1
 
     # top has white edges?
     if state[5][0][1] == bottom:
-        h = h + 1 
+        h += 1 
     if state[5][2][1] == bottom:
-        h = h + 1
+        h += 1
     if state[5][1][0] == bottom:
-        h = h + 1
+        h += 1
     if state[5][1][2] == bottom:
-        h = h + 1
+        h += 1
     
     # 1 corner
     bad_corners = 0
-    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
-            or state[1][2][0] != state[1][1][1]
-            or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]
-            ):
-        bad_corners = bad_corners + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
-            or state[2][2][0] != state[2][1][1]
-            or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]
-            ):
-        bad_corners = bad_corners + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]
-            or state[3][2][0] != state[3][1][1]
-            or state[2][1][2] != state[2][1][1] or state[3][1][0] != state[3][1][1]
-            ):
-        bad_corners = bad_corners + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]
-            or state[4][2][0] != state[4][1][1]
-            or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]
-            ):
-        bad_corners = bad_corners + 1
-    if (bad_corners == 4):
-        h = h + 4
-    elif (bad_corners == 3):
-        h = h + 3
-    elif (bad_corners == 2):
-        h = h + 2
-    elif (bad_corners == 1):
-        h = h + 1
+    if (state[0][0][0] != bottom or state[4][2][2] != left
+            or state[1][2][0] != front
+            or state[4][1][2] != left or state[1][1][0] != front):
+        h += 1
+    if (state[0][0][2] != bottom or state[1][2][2] != front
+            or state[2][2][0] != right
+            or state[1][1][2] != front or state[2][1][0] != right):
+        h += 1
+    if (state[0][2][2] != bottom or state[2][2][2] != right
+            or state[3][2][0] != back
+            or state[2][1][2] != right or state[3][1][0] != back):
+        h += 1
+    if (state[0][2][0] != bottom or state[3][2][2] != back
+            or state[4][2][0] != left
+            or state[3][1][2] != back or state[4][1][0] != left):
+        h += 1
     
-    # top has white corners?
+    # top has bottom corners?
     if state[5][0][2] == bottom:
-        h = h + 3 
+        h += 2
     if state[5][2][0] == bottom:
-        h = h + 3
+        h += 2
     if state[5][0][0] == bottom:
-        h = h + 3
+        h += 2
     if state[5][2][2] == bottom:
-        h = h + 3
+        h += 2
+
+    # misoriented bottom corners
+    if state[1][2][0] == bottom:
+        h += 1
+    if state[1][2][2] == bottom:
+        h += 1
+    if state[2][2][0] == bottom:
+        h += 1
+    if state[2][2][2] == bottom:
+        h += 1
+    if state[3][2][0] == bottom:
+        h += 1
+    if state[3][2][2] == bottom:
+        h += 1
+    if state[4][2][0] == bottom:
+        h += 1
+    if state[4][2][2] == bottom:
+        h += 1
     
-    if state[1][1][0] == state[4][1][1] and state[4][1][2] == state[1][1][1]:
-        h = h + 2
-    
+    # if state[1][1][0] == left and state[4][1][2] == bottom:
+    #     h += 3
+    # if state[1][1][2] == right and state[2][1][0] == bottom:
+    #     h += 3
+    # if state[2][1][2] == back and state[3][1][0] == right:
+    #     h += 3
+    # if state[3][1][2] == left and state[4][1][0] == back:
+    #     h += 3
+
     return h*2     
    
 
 def goal_test_oll(node):
+    """ Test if node is solved at least through OLL
+
+    :param node: the Node to test
+    :return: True if solved, False if unsolved
+    """
     state = node.cube.state
     
     bottom = state[0][1][1]
@@ -634,7 +676,7 @@ def goal_test_oll(node):
     front = state[1][1][1]
     back = state[3][1][1]
         
-    # checks that everythin is solved besides last layer permutation
+    # checks that everything is solved besides last layer permutation
     return state[1][2][1] == front and state[0][0][1] == bottom and \
         state[2][2][1] == right and state[0][1][2] == bottom and \
         state[3][2][1] == back and state[0][2][1] == bottom and \
@@ -656,6 +698,11 @@ def goal_test_oll(node):
     
     
 def goal_test_solved(node):
+    """ Test if node is as solved cube
+
+    :param node: the Node to test
+    :return: True if solved, False if unsolved
+    """
     state = node.cube.state
     
     bottom = state[0][1][1]
@@ -693,6 +740,8 @@ def goal_test_solved(node):
 
     
 def test_actions():
+    """ Function to display all actions for visual testing
+    """
     cube = Cube(solved_state_ints)
     root = Node(cube, None, None)
     root.cube.display_colors()
@@ -705,6 +754,13 @@ def test_actions():
 
 
 def test_alg_oll(node, alg):
+    """ Determine if the given algorithm can solve OLL for the node.
+
+    :param node: a Node containing the Cube before OLL
+    :param alg: a list containing the base algorithm to test cases for
+    :return: If the algorithm succeeds, the succeeding algorithm variant.
+        Otherwise, False
+    """
     test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_oll(test_node):
         return alg
@@ -725,12 +781,16 @@ def test_alg_oll(node, alg):
     
 
 def solve_oll(node):
+    """ Find an OLL sequence for the cube
+
+    :param node: a Node for the cube state before OLL. should have F2L finished.
+    :return: the algorithm that solves OLL
+    """
     if goal_test_oll(node):
         return []
     try:
         with open("oll.txt", 'r') as f:
             lines = f.read().splitlines()
-            #lines = [l.split(',') for l in lines]
             for l in lines:
                 result = test_alg_oll(node, l.split())
                 if result != False:
@@ -743,6 +803,13 @@ def solve_oll(node):
            
         
 def test_alg_pll(node, alg):
+    """ Determine if the given algorithm can solve PLL for the node.
+
+    :param node: a Node containing the Cube before PLL
+    :param alg: a list containing the base algorithm to test cases for
+    :return: if the algorithm succeeds, the succeeding algorithm variant.
+        otherwise, False
+    """
     test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_solved(test_node):
         return alg
@@ -790,6 +857,11 @@ def test_alg_pll(node, alg):
 
 
 def solve_pll(node):
+    """ Find a PLL sequence for the cube
+
+    :param node: a Node for the cube state before PLL. should have OLL finished.
+    :return: the algorithm that solves PLL
+    """
     if goal_test_solved(node):
         return []
     try:
@@ -808,6 +880,12 @@ def solve_pll(node):
 
 
 def solve(node):
+    """ Find a solution sequence to the cube
+
+    :param node: a Node for the initial cube state to solve
+    :return: solve_path: the sequence that solves the cube
+    :return: node: a Node for the newly solved cube
+    """
     cross_path = idas(node, h_cross)
     node.cube = node.cube.execute_action_sequence(cross_path)
 
@@ -834,7 +912,17 @@ def solve(node):
 def display_menu(old_node, node, scramble_sequence="", user_moves="",
                  solution_sequence="", time_taken="0.00", seed="",
                  help_toggle=False):
+    """ Clear console and display the updated menu
 
+    :param old_node: a Node containing the "previous" cube state
+    :param node: a Node containing the "newest" cube state
+    :param scramble_sequence: the sequence of the last scramble
+    :param user_moves: the running sequence of moves input by the user
+    :param solution_sequence: the solution sequence for old_node
+    :param time_taken: cpu runtime of previous command
+    :param seed: optional random seed integer
+    :param help_toggle: boolean to toggle help menu for moves
+    """
     clear()
     if seed is None:
         seed = ""
@@ -842,13 +930,28 @@ def display_menu(old_node, node, scramble_sequence="", user_moves="",
     if help_toggle:
         moves = " ".join(ACTIONS)
         print("--------------- Move Options ----------------")
-        print("Face Turns     : R, L, U, D, F, B, M, E, S")
-        print("Wide Turns     : r, l, u, d, f, b")
-        print("Cube Rotations : x, y, z")
+        print("Face/Slice Turns : R, L, U, D, F, B, M, E, S")
+        print("Wide Turns       : r, l, u, d, f, b")
+        print("Cube Rotations   : x, y, z")
         print()
-        print("Inverse        : Add ' after a move")
-        print("Double         : Add 2 after a move")
-        print("---------------------------------------------")
+        print("Inverse          : Add ' after a move")
+        print("Double           : Add 2 after a move")
+        # print("---------------------------------------------")
+
+    print("----------------- Commands ------------------")
+    print("1. Random Scramble")
+    print("2. Enter Moves")
+    print("3. Auto Solve")
+    print("4. Set Random Seed")
+    print("5. Remove Random Seed")
+    print()
+    print("H. Toggle Move Help")
+    print("Q. Quit")
+    print("------------------ Before -------------------")
+    old_node.cube.display_colors()
+    print("------------------ After --------------------")
+    node.cube.display_colors()
+    print("------------------- Info --------------------")
 
     print("Random seed        : ", seed)
     print("Current scramble   : ", " ".join(scramble_sequence))
@@ -860,22 +963,7 @@ def display_menu(old_node, node, scramble_sequence="", user_moves="",
             print("                      ", end="")
         print(move, end=" ")
     print()
-
-    print("------------------ Before -------------------")
-    old_node.cube.display_colors()
-    print("------------------ After --------------------")
-    node.cube.display_colors()
     print("----------------- %.2f secs -----------------" % time_taken)
-
-    print("1. Random Scramble")
-    print("2. Enter Moves")
-    print("3. Auto Solve")
-    print("4. Set Random Seed")
-    print("5. Remove Random Seed")
-    print()
-    print("H. Toggle Move Help")
-
-    print()
     print("Enter move(s) or command : ", end="")
 
 
@@ -888,6 +976,8 @@ for i in range(6):
 
 
 def main():
+    """ The main function. Contains the menu loop.
+    """
     start_state = solved_state_ints
     scramble_sequence = []
     user_moves = []
@@ -910,11 +1000,12 @@ def main():
             random.seed()
 
         command = input()
-        start_time = time.process_time()
 
         if command == "h" or command == "H" or command == "help":
             help_toggle = not help_toggle
             continue
+
+        start_time = time.process_time()
 
         if command == '1':
             old_root = Node(solved_cube, None, None)
@@ -936,14 +1027,12 @@ def main():
             seed = int(input())
         elif command == '5':
             seed = None
-
-        # elif command == '6':
-        #     print()
-        #     print("Finding Solve Sequence...")
-        #     solution_sequence, root = solve(root)
+        elif command == 'Q' or command == 'q':
+            exit()
 
         command_list = command.split()
         if set(command_list).issubset(set(ACTIONS)):
+            old_root = Node(root.cube, None, None)
             root.cube = root.cube.execute_action_sequence(command_list)
             user_moves.extend(command_list)
 

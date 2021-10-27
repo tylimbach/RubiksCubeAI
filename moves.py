@@ -257,3 +257,4 @@ ACTIONS = {"R": turn_r, "R'": turn_ri, "L": turn_l, "L'": turn_li, "U": turn_u,
 "r2": turn_rw2, "l2": turn_lw2, "u2": turn_uw2, "d2": turn_dw2, "f2": turn_fw2,
 "b2": turn_bw2, "x2": rot_x2, "y2": rot_y2, "z2": rot_z2    
 }
+

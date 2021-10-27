@@ -11,15 +11,6 @@ from moves import ACTIONS
 from math import sqrt as sqrt
 import random
 import time
-from collections import deque
-import os
-import sys
-
-## profiling imports
-#import cProfile
-#import pstats
-#from pstats import SortKey
-
 import os
 
 
@@ -31,14 +22,13 @@ def clear():
 # import pstats
 # from pstats import SortKey
 
-# random.seed(1)
-
 # # set python hash seed to 0 so hashes are consistent across runs
 # hashseed = os.getenv('PYTHONHASHSEED')
 # if not hashseed:
 #     os.environ['PYTHONHASHSEED'] = '0'
 #     os.execv(sys.executable, [sys.executable] + sys.argv)
-    
+
+
 # color escape sequences for xterm-256color bgs
 ORANGE_BG = "\033[48;5;208m  \033[0;0m"
 YELLOW_BG = "\033[48;5;11m  \033[0;0m"
@@ -82,8 +72,7 @@ class Cube:
             output += "".join(str(self.state[0][i]))
             output += "\n"
         print(output)
-        
-        
+
     def display_colors(self):
         """ prints to terminal a colored representation of the cube
         
@@ -93,7 +82,7 @@ class Cube:
         output = ""
         for i in range(self.size):
             output = " " * (self.size*2)
-            print (output, end='')
+            print(output, end='')
             for color in self.state[5][i]:
                 print(pick_color(color), end='')
             print()
@@ -109,13 +98,11 @@ class Cube:
             print()
         for i in range(self.size):
             output = " " * (self.size*2)
-            print (output, end='')
+            print(output, end='')
             for color in self.state[0][i]:
                 print(pick_color(color), end='')
             print()
-        print(output)
-        
-        
+
     def execute_action(self, action):
         """ simulates a turn or rotation of the cube
         
@@ -356,10 +343,7 @@ def idas_search(path, g, bound, h_func):
     """
     node = path[-1]
     f = h_func(node) + g
-    #time.sleep(1)
-    #node.cube.display_colors()
-    #print(find_path(node))
-    #print(h_func(node))
+
     if h_func(node) == 0:  # if reached goal state
         return "FOUND"
     if f > bound:  # if we are over the ids bound
@@ -432,27 +416,27 @@ def h_layer1_1(node):
     
     # 1 corner
     bad_corners = 0
-    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]\
-            or state[1][2][0] != state[1][1][1]\
+    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
+            or state[1][2][0] != state[1][1][1]
             or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]
             ):
         bad_corners = bad_corners + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]\
-            or state[2][2][0] != state[2][1][1]\
+    if (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
+            or state[2][2][0] != state[2][1][1]
             or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]\
-            or state[3][2][0] != state[3][1][1]\
+    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]
+            or state[3][2][0] != state[3][1][1]
             or state[2][1][2] != state[2][1][1] or state[3][1][0] != state[3][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]\
-            or state[4][2][0] != state[4][1][1]\
+    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]
+            or state[4][2][0] != state[4][1][1]
             or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (bad_corners == 4):
+    if bad_corners == 4:
         h = h + 1
     return h 
     
@@ -484,23 +468,23 @@ def h_layer1_2(node):
     
     # 1 corner
     bad_corners = 0
-    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]\
-            or state[1][2][0] != state[1][1][1]\
+    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
+            or state[1][2][0] != state[1][1][1]
             or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]
             ):
         bad_corners = bad_corners + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]\
-            or state[2][2][0] != state[2][1][1]\
+    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
+            or state[2][2][0] != state[2][1][1]
             or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]\
-            or state[3][2][0] != state[3][1][1]\
+    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]
+            or state[3][2][0] != state[3][1][1]
             or state[2][1][2] != state[2][1][1] or state[3][1][0] != state[3][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]\
-            or state[4][2][0] != state[4][1][1]\
+    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]
+            or state[4][2][0] != state[4][1][1]
             or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]
             ):
         bad_corners = bad_corners + 1
@@ -539,23 +523,23 @@ def h_layer1_3(node):
     
     # 1 corner
     bad_corners = 0
-    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]\
-            or state[1][2][0] != state[1][1][1]\
+    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
+            or state[1][2][0] != state[1][1][1]
             or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]
             ):
         bad_corners = bad_corners + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]\
-            or state[2][2][0] != state[2][1][1]\
+    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
+            or state[2][2][0] != state[2][1][1]
             or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]\
-            or state[3][2][0] != state[3][1][1]\
+    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]
+            or state[3][2][0] != state[3][1][1]
             or state[2][1][2] != state[2][1][1] or state[3][1][0] != state[3][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]\
-            or state[4][2][0] != state[4][1][1]\
+    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]
+            or state[4][2][0] != state[4][1][1]
             or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]
             ):
         bad_corners = bad_corners + 1
@@ -595,23 +579,23 @@ def h_layer1_4(node):
     
     # 1 corner
     bad_corners = 0
-    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]\
-            or state[1][2][0] != state[1][1][1]\
+    if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
+            or state[1][2][0] != state[1][1][1]
             or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]
             ):
         bad_corners = bad_corners + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]\
-            or state[2][2][0] != state[2][1][1]\
+    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
+            or state[2][2][0] != state[2][1][1]
             or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]\
-            or state[3][2][0] != state[3][1][1]\
+    if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]
+            or state[3][2][0] != state[3][1][1]
             or state[2][1][2] != state[2][1][1] or state[3][1][0] != state[3][1][1]
             ):
         bad_corners = bad_corners + 1
-    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]\
-            or state[4][2][0] != state[4][1][1]\
+    if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]
+            or state[4][2][0] != state[4][1][1]
             or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]
             ):
         bad_corners = bad_corners + 1
@@ -847,38 +831,52 @@ def solve(node):
     return solve_path, node
 
 
-def display_menu(node, scramble_sequence="", user_moves="",
-                 solution_sequence="", time_taken="0.00", seed=""):
+def display_menu(old_node, node, scramble_sequence="", user_moves="",
+                 solution_sequence="", time_taken="0.00", seed="",
+                 help_toggle=False):
+
     clear()
     if seed is None:
         seed = ""
-    print("Random seed       : ", seed)
-    print("Current scramble  : ", " ".join(scramble_sequence))
-    print("Move History      : ", " ".join(user_moves))
-    print("Solution sequence :  ", end="")
+
+    if help_toggle:
+        moves = " ".join(ACTIONS)
+        print("--------------- Move Options ----------------")
+        print("Face Turns     : R, L, U, D, F, B, M, E, S")
+        print("Wide Turns     : r, l, u, d, f, b")
+        print("Cube Rotations : x, y, z")
+        print()
+        print("Inverse        : Add ' after a move")
+        print("Double         : Add 2 after a move")
+        print("---------------------------------------------")
+
+    print("Random seed        : ", seed)
+    print("Current scramble   : ", " ".join(scramble_sequence))
+    print("Move History       : ", " ".join(user_moves))
+    print("Solution sequence  :  ", end="")
     for idx, move in enumerate(solution_sequence):
         if idx % 25 == 0 and idx > 0:
             print()
-            print("                     ", end="")
+            print("                      ", end="")
         print(move, end=" ")
     print()
-    print()
-    print("Time of last operation: %.2f seconds " % time_taken)
-    print()
 
+    print("------------------ Before -------------------")
+    old_node.cube.display_colors()
+    print("------------------ After --------------------")
     node.cube.display_colors()
+    print("----------------- %.2f secs -----------------" % time_taken)
 
     print("1. Random Scramble")
     print("2. Enter Moves")
-    print("3. Computer Solve")
+    print("3. Auto Solve")
     print("4. Set Random Seed")
     print("5. Remove Random Seed")
-
-    # print()
-    # print("6. Watch Solve (Work in progress)")
+    print()
+    print("H. Toggle Move Help")
 
     print()
-    print("Enter a number from above:  ", end="")
+    print("Enter move(s) or command : ", end="")
 
 
 solved_state_ints = string_to_state('0'+' 0'*8+" 3"*9+" 4"*9+" 1"*9+" 2"*9+" 5"*9)
@@ -896,37 +894,45 @@ def main():
     solution_sequence = []
     seed = None
     time_taken = 0.0
+    help_toggle = False
 
     # gen root and set to start puzzle
-    cube = Cube(start_state)
-    root = Node(cube, None, None)
+    solved_cube = Cube(start_state)
+    root = Node(solved_cube, None, None)
+    old_root = Node(solved_cube, None, None)
 
     while True:
-        display_menu(root, scramble_sequence, user_moves, solution_sequence, time_taken,
-                     seed)
+        display_menu(old_root, root, scramble_sequence, user_moves, solution_sequence, time_taken,
+                     seed, help_toggle)
         if seed is not None:
-            random.seed(seed)
+            random.seed(int(seed))
         else:
             random.seed()
 
         command = input()
         start_time = time.process_time()
 
+        if command == "h" or command == "H" or command == "help":
+            help_toggle = not help_toggle
+            continue
+
         if command == '1':
+            old_root = Node(solved_cube, None, None)
             root.cube, scramble_sequence = Node(Cube(start_state), None, None).cube.scramble()
             user_moves = []
         elif command == '2':
+            old_root = Node(root.cube, None, None)
             print("Enter a space separated move sequence:  ", end="")
             raw_sequence = input()
             sequence = raw_sequence.split()
             root.cube = root.cube.execute_action_sequence(sequence)
             user_moves.extend(sequence)
         elif command == '3':
-            print()
+            old_root = Node(root.cube, None, None)
             print("Solving...")
             solution_sequence, root = solve(root)
         elif command == '4':
-            print("Enter a seed integer: ", end="")
+            print("Enter a seed integer:  ", end="")
             seed = int(input())
         elif command == '5':
             seed = None

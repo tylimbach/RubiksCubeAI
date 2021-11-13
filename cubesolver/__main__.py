@@ -5,35 +5,37 @@ Launch script intended to start the application
 
 __author__ = "Tyler Limbach"
 
-import os
-import sys
-from rubikscube.src.menu import menu_loop
-
 # # profiling imports
 # import cProfile
 # import pstats
 # from pstats import SortKey
 
 
-def clear():
-    os.system("clear")
-
-
-def main():
+def __main__():
     """ Main function to start app
     """
+    import os
+    import sys
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
     # set python hash seed to 0 for consistent hashing
     hash_seed = os.getenv('PYTHONHASHSEED')
-    if not hash_seed:
-        os.environ['PYTHONHASHSEED'] = '0'
-        os.execv(sys.executable, [sys.executable] + sys.argv)
+    python_path = os.getenv('PYTHONPATH')
+
+    print(sys.path)
+
+    # if not hash_seed: #or python_path == '.':
+    #     os.environ['PYTHONHASHSEED'] = '0'
+    #     #os.environ['PYTHONPATH'] = '.'
+    #     os.execv(sys.executable, [sys.executable] + sys.argv)
+
+    from cubesolver.src.menu import menu_loop
 
     menu_loop()
 
 
-
 if __name__ == '__main__':
-    main()
+    __main__()
 
     # cProfile.run('main()', 'restats')
     # p = pstats.Stats('restats')

@@ -3,9 +3,9 @@ algorithms.py
 Module related to solving algorithms and cube Node generation
 """
 
-from cube import Cube
-from cube import solved_state_ints
-from actions import ACTIONS_3x3
+from cubesolver.src.cube import Cube
+from cubesolver.src.cube import solved_state_ints
+from cubesolver.src.cube import ACTIONS_3x3
 
 
 class Node:
@@ -565,7 +565,7 @@ def solve_oll(node):
     if goal_test_oll(node):
         return []
     try:
-        with open("resources/oll.txt", 'r') as f:
+        with open("cubesolver/resources/oll.txt", 'r') as f:
             lines = f.read().splitlines()
             for l in lines:
                 result = test_alg_oll(node, l.split())
@@ -641,7 +641,7 @@ def solve_pll(node):
     if goal_test_solved(node):
         return []
     try:
-        with open("resources/pll.txt", 'r') as f:
+        with open("cubesolver/resources/pll.txt", 'r') as f:
             lines = f.read().splitlines()
             # lines = [l.split(',') for l in lines]
             for line in lines:

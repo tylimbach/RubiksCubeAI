@@ -1,6 +1,6 @@
 """
 actions.py
-Module for manipulating Cube states (executing actions like turns)
+Module for manipulating Cube states (executing actions)
 """
 
 

@@ -2,14 +2,19 @@
 menu.py
 Module for displaying menu loop and processing user input
 """
-
-from rubikscube.src.actions import ACTIONS_3x3
-from rubikscube.src.cube import solved_state_ints
-from rubikscube.src.cube import Cube
-from rubikscube.src.algorithms import Node
-import rubikscube.src.algorithms as algorithms
 import random
 import time
+import os
+
+from cubesolver.src.actions import ACTIONS_3x3
+from cubesolver.src.cube import solved_state_ints
+from cubesolver.src.cube import Cube
+from cubesolver.src.algorithms import Node
+import cubesolver.src.algorithms as algorithms
+
+
+def clear():
+    os.system("clear")
 
 
 def menu_loop():

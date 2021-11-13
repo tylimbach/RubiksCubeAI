@@ -2,10 +2,10 @@
 cube.py
 Module for Cube data structure and creation
 """
-
-from actions import ACTIONS_3x3
-import random
 from math import sqrt
+import random
+
+from cubesolver.src.actions import ACTIONS_3x3
 
 # color escape sequences for xterm-256color bgs
 ORANGE_BG = "\033[48;5;208m  \033[0;0m"

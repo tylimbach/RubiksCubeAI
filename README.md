@@ -87,11 +87,12 @@ Potential Ideas:
     - Java : Swing and JavaFX, probably less performative and capable than C++, but easier to learn/code and I have more Java experience
     - C++  : Qt and OpenGL together are very capable of the task, very performative, but would be the most difficult to write and learn
 - Turn into a web application
-    - Could still use Python as backend
+    - Backend can remain in Python
     - Easy to share and use
+    - Can utilize front-end tool stacks
 - Use PyQt and OpenGL
     - Less refactoring
-    - Slowest option
+    - Slower and less native than compiled options
 
 ## Advice & Collaboration
 Feel free to email me at tylimbach@gmail if you have any advice or would like to aid in the project.

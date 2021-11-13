@@ -13,7 +13,7 @@ You must have Python 3 installed. The project was tested on Python 3.9.
 Download the repository on GitHub. Navigate to project folder containing the README and rubikscube directory, start the script with
 the command: _python3 cubesolver_
 ```shell
-/rubiks-cube $ python3 cubesolver
+/rubiks-cube $ python3 -m cubesolver
 ```
 
 ## 3x3 Notation

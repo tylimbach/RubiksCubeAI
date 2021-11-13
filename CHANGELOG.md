@@ -1,37 +1,36 @@
-
-# Change Log
-All notable changes to this project will be documented in this file.
+All notable changes will be found here
 
 
-## [1.2.0]
-_This is the first stable release_
-The file layout has changed and so has the command to launch the application. Check the README.md to see updated guides or info.
+# [1.1.0] (2021-11-13)
+## Release Notes
+> File layout has changed and so has the command to launch the application. Check the README.md to see updated guides or info.
 ### Added
-- Toggle command to display notation help for actions (moves)
-- Toggle command to toggle display type between colored squares and arrays of numbers.
-- Set or remove a custom random seed
+- More commands including:
+    - Help and display toggle commands 
+    - Setting and removing custom random seeds
+- Automatic parsing of user inputted move sequences in place of a command
+- Simultaneously display the before and after cube after executing any command in the terminal
 ### Changed
 - Restructured & Organized Files & Modules
+- Main script is now `__main__.py`
 - Improved visual layout of terminal manu
-- README.md
-
-## [1.1.0]
-### Added
-- Auto-detect when a move or move sequence is entered, and perform it.
-- Display the cube's state before the previous action or command, as well as the new cube after than action
-- Track time each command takes (mostly for solves)
-- Track user's turn history
+- README.md updated
+### Fixed
+- Solve algorithm failing to find a solution for various PLL and OLL cases
 
 ## [1.0.0]
-Major upgrades added to restructure the program and to make it user-friendly in the form of a terminal menu loop.
+> This is the first stable release. The user can now interface with the program via a terminal menu.
 ### Added
 - Menu loop to control application flow
-- Menu accepts commands:
-  - Random scramble
-  - Enter a sequence of strings to execute moves on the cube
-  - Have the AI solve the cube
+- Menu accepts commands from the user
+- Expanded actions to include all 3x3 official moves:
+    - Rotations added
+    - Slice turns added
+- Support to directly execute inverse or double variation of any action
 
 ---
+# Pre-release Notes
+The "versions" listed here are not tagged or released. This section is just a vague chronological record of major changes in very early development. The numbers aren't attached to specific commits and may never be. Eventually this section will likely be removed.
 ## [0.6.0] 
 ### Added
 - README.md explaining project and instructions
@@ -45,7 +44,7 @@ Major upgrades added to restructure the program and to make it user-friendly in 
 
 ## [0.5.0] 
 ### Added 
-- Support for more actions (slice turns, rotations, wide turns)
+- Support for more actions (such as wide turns)
 ### Fixed
 - PLL and OLL cases involving the added turn types now work correctly
 

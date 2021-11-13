@@ -1,5 +1,5 @@
-# Rubiks Cube Simulator
-Rubiks Cube Simulator is a terminal menu application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
+# Rubiks Cube AI
+A terminal menu application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
 
 - Creation of a solved 3x3 cube
 - Simulate turns or rotations

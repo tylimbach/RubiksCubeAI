@@ -82,16 +82,21 @@ Long-term Goals:
 
 Supporting larger cubes becomes much more complex not only to solve, but also to generate and simulate operations on. A large amount of my cube generation code is already generalized for multiple sizes, but turns and rotations are not. Simulating turns and rotations for NxN sized cubes is not an easy task to generalize or template. This will likely involve me restructuring the Cube class to contain object fields representing some combination of faces, piece types, or slices, rather than just a 3D array. A consequence of this restructuring is that the search algorithm will perform worse because creation of the Cube object would become more computationally expensive.
 
-Potential Ideas:
-- Rewrite in a compiled language to increase performance and simplify 3d graphics combined with a GUI
-    - Java : Swing and JavaFX, probably less performative and capable than C++, but easier to learn/code and I have more Java experience
-    - C++  : Qt and OpenGL together are very capable of the task, very performative, but would be the most difficult to write and learn
-- Turn into a web application
+Potential Routes:
+- Port to a compiled language
+    - Greatly increased performance & speed
+    - Java : Swing and JavaFX
+    - C++  : Qt and OpenGL
+- Port to web application
     - Backend can remain in Python
-    - Easy to share and use
-    - Can utilize front-end tool stacks
+    - Easy to deploy and use
+    - Utilize front-end tool stacks
+    - Won't solve performance concerns
+- Port to a game engine
+    - Can utilize resources and tools the engine provides
+    - Greatly simplifies the 3D graphics and animation
 - Use PyQt and OpenGL
-    - Less refactoring
+    - Little to refactor
     - Slower and less native than compiled options
 
 ## Advice & Collaboration

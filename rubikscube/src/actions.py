@@ -1,6 +1,6 @@
-""" moves.py
-    contains functions that simulate turns and rotations on a cube state
-    contains ACTIONS dictionary to map string commands to those functions
+"""
+actions.py
+Module for manipulating Cube states (executing actions like turns)
 """
 
 

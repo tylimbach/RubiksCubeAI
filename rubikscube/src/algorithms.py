@@ -1,180 +1,17 @@
 """
-main.py
-Main script for Rubik's Cube Solver
+algorithms.py
+Module related to solving algorithms and cube Node generation
 """
 
-__author__ = "Tyler Limbach"
+from cube import Cube
+from cube import solved_state_ints
+from actions import ACTIONS_3x3
 
-# moves includes all the functions that modify states.
-from moves import ACTIONS_3x3
-
-from math import sqrt as sqrt
-import random
-import time
-import os
-
-
-def clear():
-    os.system("clear")
-
-# # profiling imports
-# import cProfile
-# import pstats
-# from pstats import SortKey
-
-# # set python hash seed to 0 so hashes are consistent across runs
-# hashseed = os.getenv('PYTHONHASHSEED')
-# if not hashseed:
-#     os.environ['PYTHONHASHSEED'] = '0'
-#     os.execv(sys.executable, [sys.executable] + sys.argv)
-
-
-# color escape sequences for xterm-256color bgs
-ORANGE_BG = "\033[48;5;208m  \033[0;0m"
-YELLOW_BG = "\033[48;5;11m  \033[0;0m"
-RED_BG = "\033[48;5;9m  \033[0;0m" # 1
-GREEN_BG = "\033[48;5;10m  \033[0;0m" # 2
-BLUE_BG = "\033[48;5;12m  \033[0;0m" # 21
-WHITE_BG = "\033[48;5;254m  \033[0;0m"
-
-
-class Cube:
-    """ data structure to represent a rubiks cube 
-    """
-    
-    def __init__(self, state):
-        self.size = int(len(state[0]))
-        self.state = state
-
-    def display_text(self):
-        """ prints to terminal a text representation of the cube
-        
-            the print output represents a physical cube's faces as if
-            they were unfolded away from the middle (front) face into 2d space
-            numbers 1-6 represent colors
-        """         
-        output = ""
-        for i in range(self.size):
-            output += " " * (self.size*3+1)
-            output += "".join(str(self.state[5][i]))
-            output += "\n"
-        for i in range(self.size):
-            output += "".join(str(self.state[4][i]))
-            output += " "
-            output += "".join(str(self.state[1][i]))
-            output += " "
-            output += "".join(str(self.state[2][i]))
-            output += " "
-            output += "".join(str(self.state[3][i]))
-            output += "\n"
-        for i in range(self.size):
-            output += " " * (self.size*3+1)
-            output += "".join(str(self.state[0][i]))
-            output += "\n"
-        print(output)
-
-    def display_colors(self):
-        """ prints to terminal a colored representation of the cube
-        
-        the print output represents a physical cube's faces as if
-        they were unfolded away from the middle (front) face into 2d space
-        """         
-        output = ""
-        for i in range(self.size):
-            output = " " * (self.size*2)
-            print(output, end='')
-            for color in self.state[5][i]:
-                print(pick_color(color), end='')
-            print()
-        for i in range(self.size):
-            for color in self.state[4][i]:
-                print(pick_color(color), end='')
-            for color in self.state[1][i]:
-                print(pick_color(color), end='')
-            for color in self.state[2][i]:
-                print(pick_color(color), end='')
-            for color in self.state[3][i]:
-                print(pick_color(color), end='')
-            print()
-        for i in range(self.size):
-            output = " " * (self.size*2)
-            print(output, end='')
-            for color in self.state[0][i]:
-                print(pick_color(color), end='')
-            print()
-
-    def execute_action(self, action):
-        """ simulates a turn or rotation of the cube
-        
-        moves.py contains the functions that modify the state in order to perform each action
-
-        Args:
-            action (string): string representation of the action to perform in 3x3 Rubiks notation
-                example strings:
-                R -> turn right face CW 1/4
-                R' -> counterclockwise turn of right face
-                x -> clockwise rotation around x axis
-                
-                see README.txt for more detailed notation
-                ACTIONS_3x3 is a dictionary that maps action to the correct function from moves.py
-
-        Returns:
-            Cube: a Cube reflecting the new state after the action is performed
-        """
-        state = deepcopy_state(self.state)        
-        max_idx = self.size - 1
-
-        ACTIONS_3x3[action](state, max_idx)
-        return Cube(state)
-
-    def execute_action_sequence(self, actions):
-        """simulates a series of actions on the cube (turns or rotations)
-
-        Args:
-            actions (string list): sequence of actions to simulate on the cube
-
-        Returns:
-            Cube: a Cube reflecting the new state after the sequence is performed
-        """
-        state = deepcopy_state(self.state)
-        
-        cube = Cube(state)
-        for action in actions:
-            cube = cube.execute_action(action)
-        return cube
-    
-    
-    def scramble(self):
-        """performs a 25 move random scramble on the cube struct
-        - scramble method is picking random moves and executing them
-        - this algorithm avoids any wasted moves
-            ex: R' R: cancels out to 0 moves, L L L = L' 1 move 
-
-        Returns:
-            Cube: the new scrambled cube
-            list: sequence of moves used to scramble
-        """
-        moves = ["U", "U'", "R", "R'", "L", "L'", "D", "D'", "F", "F'", "B", "B'"]
-        move_sequence = []
-        move_sequence.append(random.choice(moves))
-        while len(move_sequence) < 25:
-            move = random.choice(moves)
-            is_previous_inverse = not (move_sequence[-1][0] != move[0] or len(move_sequence[-1]) == len(move))
-            is_triple_duplicate = len(move_sequence) > 2 and (move == move_sequence[-1] == move_sequence[-2])
-
-            if not is_previous_inverse and not is_triple_duplicate:
-                move_sequence.append(move)
-            
-        cube = Cube(self.state)
-        for move in move_sequence:
-            cube = cube.execute_action(move)
-            
-        return cube, move_sequence
-    
 
 class Node:
     """ nodes holding a cube. used for expansion in search
     """
+
     def __init__(self, cube, parent, action):
         self.cube = cube
         self.parent = parent
@@ -184,30 +21,15 @@ class Node:
     def __repr__(self):
         return str(self.cube.state)
 
-
     # Comparing current node with other node. They are equal if states are equal
     def __eq__(self, other):
         return self.cube.state == other.cube.state
 
-    
-    def __ne__(self, other):   
-        return not self.__eq__(other)     
-
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(str(self.cube.state))
-        
-
-def deepcopy_state(state):
-    """performs a deepcopy on the a 3d list cube state
-
-    Args:
-        state (3d list): a cube state we want to copy
-        
-    Returns:
-        3d list: a deep copy of state
-    """
-    return [[[x for x in y] for y in z] for z in state]
 
 
 def get_children(parent_node):
@@ -221,7 +43,7 @@ def get_children(parent_node):
     """
     children = []
     actions = ["R", "R'", "U", "U'", "F", "F'", "L", "L'", "D", "D'", "B", "B'"]
-    
+
     # this entire if block is pruning moves
     if parent_node.parent is not None:
         if parent_node.action == parent_node.parent.action:
@@ -230,59 +52,13 @@ def get_children(parent_node):
             actions.remove(parent_node.action[0])
             actions.remove(parent_node.action)
         else:
-            actions.remove(parent_node.action[0] + "'")    
+            actions.remove(parent_node.action[0] + "'")
 
     for action in actions:
         child_state = parent_node.cube.execute_action(action)
         child_node = Node(child_state, parent_node, action)
         children.append(child_node)
     return children
-
-
-def string_to_state(string):
-    """ convert a single string into a cube state 
-
-    Args:
-        string (string): a string representing cube state
-
-    Returns:
-        3d list: a useable cube state
-    """
-    state_1d = list(string.split(' '))
-    size = int(sqrt(len(state_1d) // 6))
-    state_3d = []
-    for i in range(6):
-        state_3d.append([])
-        for j in range(size):
-            state_3d[i].append([])
-        for j in range(size*size):
-            state_3d[i][j // size].append(state_1d[i*size*size + j])
-            
-    #state_3d = print(tuple(tuple(tuple(x) for x in y) for y in state_3d))
-    return state_3d
-
-
-def pick_color(char):
-    """ match a char or num to it's color code
-
-    Args:
-        char (string/char or int): an identifier representing the color of a cube square
-
-    Returns:
-        string: an xterm-256 escape sequence used to print a colored bg square
-    """
-    if char == 'R' or char == 4:
-        return RED_BG
-    elif char == 'G' or char == 1:
-        return GREEN_BG
-    elif char == 'B' or char == 3:
-        return BLUE_BG
-    elif char == 'Y' or char == 5:
-        return YELLOW_BG
-    elif char == 'O' or char == 2:
-        return ORANGE_BG
-    elif char == 'W' or char == 0:
-        return WHITE_BG
 
 
 def find_path(node):
@@ -294,14 +70,14 @@ def find_path(node):
     Returns:
         string list: path taken from the root node to the child node as actions
     """
-    path = []	
+    path = []
     while node.parent is not None:
         path.append(node.action)
         node = node.parent
     path.reverse()
     return path
-                    
-        
+
+
 def idas(root_node, h_func):
     """ perform an IDA* search to find a path to a goal state
 
@@ -323,8 +99,8 @@ def idas(root_node, h_func):
         elif t == float('inf'):
             return False  # not found
         else:
-            bound = t   # increase bound to lowest neighbor's f
-   
+            bound = t  # increase bound to lowest neighbor's f
+
 
 def idas_search(path, g, bound, h_func):
     """recursive function to perform the search in IDA*
@@ -482,22 +258,22 @@ def h_layer1_2(node):
     if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
             or state[1][2][0] != state[1][1][1]
             or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]
-            ):
+    ):
         bad_corners = bad_corners + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
+    if (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
             or state[2][2][0] != state[2][1][1]
             or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]
-            ):
+    ):
         bad_corners = bad_corners + 1
     if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]
             or state[3][2][0] != state[3][1][1]
             or state[2][1][2] != state[2][1][1] or state[3][1][0] != state[3][1][1]
-            ):
+    ):
         bad_corners = bad_corners + 1
     if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]
             or state[4][2][0] != state[4][1][1]
             or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]
-            ):
+    ):
         bad_corners = bad_corners + 1
     if bad_corners == 4:
         h += 2
@@ -542,22 +318,22 @@ def h_layer1_3(node):
     if (state[0][0][0] != bottom or state[4][2][2] != state[4][1][1]
             or state[1][2][0] != state[1][1][1]
             or state[4][1][2] != state[4][1][1] or state[1][1][0] != state[1][1][1]
-            ):
+    ):
         bad_corners = bad_corners + 1
-    if  (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
+    if (state[0][0][2] != bottom or state[1][2][2] != state[1][1][1]
             or state[2][2][0] != state[2][1][1]
             or state[1][1][2] != state[1][1][1] or state[2][1][0] != state[2][1][1]
-            ):
+    ):
         bad_corners = bad_corners + 1
     if (state[0][2][2] != bottom or state[2][2][2] != state[2][1][1]
             or state[3][2][0] != state[3][1][1]
             or state[2][1][2] != state[2][1][1] or state[3][1][0] != state[3][1][1]
-            ):
+    ):
         bad_corners = bad_corners + 1
     if (state[0][2][0] != bottom or state[3][2][2] != state[3][1][1]
             or state[4][2][0] != state[4][1][1]
             or state[3][1][2] != state[3][1][1] or state[4][1][0] != state[4][1][1]
-            ):
+    ):
         bad_corners = bad_corners + 1
     if bad_corners == 4:
         h += 3
@@ -581,7 +357,7 @@ def h_layer1_4(node):
     left = state[4][1][1]
     front = state[1][1][1]
     back = state[3][1][1]
-    
+
     # white cross perfect
     if state[1][2][1] != state[1][1][1] or state[0][0][1] != bottom:
         h += 1
@@ -594,14 +370,14 @@ def h_layer1_4(node):
 
     # top has white edges?
     if state[5][0][1] == bottom:
-        h += 1 
+        h += 1
     if state[5][2][1] == bottom:
         h += 1
     if state[5][1][0] == bottom:
         h += 1
     if state[5][1][2] == bottom:
         h += 1
-    
+
     # 1 corner
     bad_corners = 0
     if (state[0][0][0] != bottom or state[4][2][2] != left
@@ -620,7 +396,7 @@ def h_layer1_4(node):
             or state[4][2][0] != left
             or state[3][1][2] != back or state[4][1][0] != left):
         h += 1
-    
+
     # top has bottom corners?
     if state[5][0][2] == bottom:
         h += 2
@@ -648,7 +424,7 @@ def h_layer1_4(node):
         h += 1
     if state[4][2][2] == bottom:
         h += 1
-    
+
     # if state[1][1][0] == left and state[4][1][2] == bottom:
     #     h += 3
     # if state[1][1][2] == right and state[2][1][0] == bottom:
@@ -658,8 +434,8 @@ def h_layer1_4(node):
     # if state[3][1][2] == left and state[4][1][0] == back:
     #     h += 3
 
-    return h*2     
-   
+    return h * 2
+
 
 def goal_test_oll(node):
     """ Test if node is solved at least through OLL
@@ -668,35 +444,35 @@ def goal_test_oll(node):
     :return: True if solved, False if unsolved
     """
     state = node.cube.state
-    
+
     bottom = state[0][1][1]
     top = state[5][1][1]
     right = state[2][1][1]
     left = state[4][1][1]
     front = state[1][1][1]
     back = state[3][1][1]
-        
+
     # checks that everything is solved besides last layer permutation
     return state[1][2][1] == front and state[0][0][1] == bottom and \
-        state[2][2][1] == right and state[0][1][2] == bottom and \
-        state[3][2][1] == back and state[0][2][1] == bottom and \
-        state[4][2][1] == left and state[0][1][0] == bottom and \
-        state[0][0][0] == bottom and state[4][2][2] == left and \
-        state[1][2][0] == front and state[0][0][2] == bottom and \
-        state[1][2][2] == front and state[2][2][0] == right and \
-        state[0][2][2] == bottom and state[2][2][2] == right and \
-        state[3][2][0] == back and state[0][2][0] == bottom and \
-        state[3][2][2] == back and state[4][2][0] == left and \
-        state[4][1][2] == left and state[1][1][0] == front and \
-        state[1][1][2] == front and state[2][1][0] == right and \
-        state[2][1][2] == right and state[3][1][0] == back and \
-        state[3][1][2] == back and state[4][1][0] == left and \
-        state[5][0][1] == top and state[5][1][2] == top and \
-        state[5][2][1] == top and state[5][1][0] == top and \
-        state[5][0][0] == top and state[5][0][2] == top and \
-        state[5][2][2] == top and state[5][2][0] == top
-    
-    
+           state[2][2][1] == right and state[0][1][2] == bottom and \
+           state[3][2][1] == back and state[0][2][1] == bottom and \
+           state[4][2][1] == left and state[0][1][0] == bottom and \
+           state[0][0][0] == bottom and state[4][2][2] == left and \
+           state[1][2][0] == front and state[0][0][2] == bottom and \
+           state[1][2][2] == front and state[2][2][0] == right and \
+           state[0][2][2] == bottom and state[2][2][2] == right and \
+           state[3][2][0] == back and state[0][2][0] == bottom and \
+           state[3][2][2] == back and state[4][2][0] == left and \
+           state[4][1][2] == left and state[1][1][0] == front and \
+           state[1][1][2] == front and state[2][1][0] == right and \
+           state[2][1][2] == right and state[3][1][0] == back and \
+           state[3][1][2] == back and state[4][1][0] == left and \
+           state[5][0][1] == top and state[5][1][2] == top and \
+           state[5][2][1] == top and state[5][1][0] == top and \
+           state[5][0][0] == top and state[5][0][2] == top and \
+           state[5][2][2] == top and state[5][2][0] == top
+
+
 def goal_test_solved(node):
     """ Test if node is as solved cube
 
@@ -704,48 +480,48 @@ def goal_test_solved(node):
     :return: True if solved, False if unsolved
     """
     state = node.cube.state
-    
+
     bottom = state[0][1][1]
     top = state[5][1][1]
     right = state[2][1][1]
     left = state[4][1][1]
     front = state[1][1][1]
     back = state[3][1][1]
-        
+
     # checks that everythin is solved besides last layer permutation
     return state[1][2][1] == front and state[0][0][1] == bottom and \
-        state[2][2][1] == right and state[0][1][2] == bottom and \
-        state[3][2][1] == back and state[0][2][1] == bottom and \
-        state[4][2][1] == left and state[0][1][0] == bottom and \
-        state[0][0][0] == bottom and state[4][2][2] == left and \
-        state[1][2][0] == front and state[0][0][2] == bottom and \
-        state[1][2][2] == front and state[2][2][0] == right and \
-        state[0][2][2] == bottom and state[2][2][2] == right and \
-        state[3][2][0] == back and state[0][2][0] == bottom and \
-        state[3][2][2] == back and state[4][2][0] == left and \
-        state[4][1][2] == left and state[1][1][0] == front and \
-        state[1][1][2] == front and state[2][1][0] == right and \
-        state[2][1][2] == right and state[3][1][0] == back and \
-        state[3][1][2] == back and state[4][1][0] == left and \
-        state[5][0][1] == top and state[5][1][2] == top and \
-        state[5][2][1] == top and state[5][1][0] == top and \
-        state[5][0][0] == top and state[5][0][2] == top and \
-        state[5][2][2] == top and state[5][2][0] == top and \
-        state[1][0][1] == front and state[2][0][1] == right and \
-        state[3][0][1] == back and state[4][0][1] == left and \
-        state[3][0][2] == back and state[4][0][0] == left and \
-        state[3][0][0] == back and state[2][0][2] == right and \
-        state[1][0][2] == front and state[2][0][0] == right and \
-        state[4][0][2] == left and state[1][0][0] == front
+           state[2][2][1] == right and state[0][1][2] == bottom and \
+           state[3][2][1] == back and state[0][2][1] == bottom and \
+           state[4][2][1] == left and state[0][1][0] == bottom and \
+           state[0][0][0] == bottom and state[4][2][2] == left and \
+           state[1][2][0] == front and state[0][0][2] == bottom and \
+           state[1][2][2] == front and state[2][2][0] == right and \
+           state[0][2][2] == bottom and state[2][2][2] == right and \
+           state[3][2][0] == back and state[0][2][0] == bottom and \
+           state[3][2][2] == back and state[4][2][0] == left and \
+           state[4][1][2] == left and state[1][1][0] == front and \
+           state[1][1][2] == front and state[2][1][0] == right and \
+           state[2][1][2] == right and state[3][1][0] == back and \
+           state[3][1][2] == back and state[4][1][0] == left and \
+           state[5][0][1] == top and state[5][1][2] == top and \
+           state[5][2][1] == top and state[5][1][0] == top and \
+           state[5][0][0] == top and state[5][0][2] == top and \
+           state[5][2][2] == top and state[5][2][0] == top and \
+           state[1][0][1] == front and state[2][0][1] == right and \
+           state[3][0][1] == back and state[4][0][1] == left and \
+           state[3][0][2] == back and state[4][0][0] == left and \
+           state[3][0][0] == back and state[2][0][2] == right and \
+           state[1][0][2] == front and state[2][0][0] == right and \
+           state[4][0][2] == left and state[1][0][0] == front
 
-    
+
 def test_actions():
     """ Function to display all actions for visual testing
     """
     cube = Cube(solved_state_ints)
     root = Node(cube, None, None)
     root.cube.display_colors()
-    
+
     for action in ACTIONS_3x3:
         # print("Solved:")
         # root.cube.display_colors()
@@ -776,9 +552,9 @@ def test_alg_oll(node, alg):
     test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_oll(test_node):
         return alg
-    
+
     return False
-    
+
 
 def solve_oll(node):
     """ Find an OLL sequence for the cube
@@ -789,7 +565,7 @@ def solve_oll(node):
     if goal_test_oll(node):
         return []
     try:
-        with open("oll.txt", 'r') as f:
+        with open("resources/oll.txt", 'r') as f:
             lines = f.read().splitlines()
             for l in lines:
                 result = test_alg_oll(node, l.split())
@@ -800,8 +576,8 @@ def solve_oll(node):
     except IOError:
         print("There was an error reading oll.txt.")
         exit()
-           
-        
+
+
 def test_alg_pll(node, alg):
     """ Determine if the given algorithm can solve PLL for the node.
 
@@ -816,10 +592,10 @@ def test_alg_pll(node, alg):
     elif goal_test_solved(Node(test_node.cube.execute_action("U"), None, None)):
         return alg + ["U"]
     elif goal_test_solved(Node(test_node.cube.execute_action("U'"), None, None)):
-        return alg + ["U'"]    
+        return alg + ["U'"]
     elif goal_test_solved(Node(test_node.cube.execute_action("U2"), None, None)):
-        return alg + ["U2"]        
-    
+        return alg + ["U2"]
+
     alg.insert(0, "U")
     test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_solved(test_node):
@@ -827,10 +603,10 @@ def test_alg_pll(node, alg):
     elif goal_test_solved(Node(test_node.cube.execute_action("U"), None, None)):
         return alg + ["U"]
     elif goal_test_solved(Node(test_node.cube.execute_action("U'"), None, None)):
-        return alg + ["U'"]    
+        return alg + ["U'"]
     elif goal_test_solved(Node(test_node.cube.execute_action("U2"), None, None)):
         return alg + ["U2"]
-    
+
     alg[0] = "U2"
     test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_solved(test_node):
@@ -838,10 +614,10 @@ def test_alg_pll(node, alg):
     elif goal_test_solved(Node(test_node.cube.execute_action("U"), None, None)):
         return alg + ["U"]
     elif goal_test_solved(Node(test_node.cube.execute_action("U'"), None, None)):
-        return alg + ["U'"]    
+        return alg + ["U'"]
     elif goal_test_solved(Node(test_node.cube.execute_action("U2"), None, None)):
-        return alg + ["U2"]      
-    
+        return alg + ["U2"]
+
     alg[0] = "U'"
     test_node = Node(node.cube.execute_action_sequence(alg), None, None)
     if goal_test_solved(test_node):
@@ -849,10 +625,10 @@ def test_alg_pll(node, alg):
     elif goal_test_solved(Node(test_node.cube.execute_action("U"), None, None)):
         return alg + ["U"]
     elif goal_test_solved(Node(test_node.cube.execute_action("U'"), None, None)):
-        return alg + ["U'"]    
+        return alg + ["U'"]
     elif goal_test_solved(Node(test_node.cube.execute_action("U2"), None, None)):
-        return alg + ["U2"]  
-    
+        return alg + ["U2"]
+
     return False
 
 
@@ -865,7 +641,7 @@ def solve_pll(node):
     if goal_test_solved(node):
         return []
     try:
-        with open("pll.txt", 'r') as f:
+        with open("resources/pll.txt", 'r') as f:
             lines = f.read().splitlines()
             # lines = [l.split(',') for l in lines]
             for line in lines:
@@ -879,8 +655,8 @@ def solve_pll(node):
         exit()
 
 
-def solve(node):
-    """ Find a solution sequence to the cube
+def solve_cfop(node):
+    """ Find a solution sequence to the cube using CFOP method
 
     :param node: a Node for the initial cube state to solve
     :return: solve_path: the sequence that solves the cube
@@ -904,157 +680,81 @@ def solve(node):
     node.cube = node.cube.execute_action_sequence(pll_path)
 
     solve_path = cross_path + f2l_path1 + f2l_path2 + f2l_path3 \
-        + f2l_path4 + oll_path + pll_path
+                 + f2l_path4 + oll_path + pll_path
 
     return solve_path, node
 
 
-def display_menu(old_node, node, scramble_sequence="", user_moves="",
-                 solution_sequence="", time_taken="0.00", seed="",
-                 help_toggle=False, is_text_mode=False):
-    """ Clear console and display the updated menu
+def h_g1(node):
+    h = 0
 
-    :param old_node: a Node containing the "previous" cube state
-    :param node: a Node containing the "newest" cube state
-    :param scramble_sequence: the sequence of the last scramble
-    :param user_moves: the running sequence of moves input by the user
-    :param solution_sequence: the solution sequence for old_node
-    :param time_taken: cpu runtime of previous command
-    :param seed: optional random seed integer
-    :param help_toggle: boolean to toggle help menu for moves
-    :param is_text_mode: boolean to toggle text vs color display mode
-    """
-    clear()
-    if seed is None:
-        seed = ""
+    state = node.cube.state
+    bottom = state[0][1][1]
+    top = state[5][1][1]
+    right = state[2][1][1]
+    left = state[4][1][1]
 
-    if help_toggle:
-        moves = " ".join(ACTIONS_3x3)
-        print("--------------- Move Options ----------------")
-        print("Face/Slice Turns : R, L, U, D, F, B, M, E, S")
-        print("Wide Turns       : r, l, u, d, f, b")
-        print("Cube Rotations   : x, y, z")
-        print()
-        print("Inverse          : Add ' after a move")
-        print("Double           : Add 2 after a move")
-        # print("---------------------------------------------")
+    # corner orientations
+    if not (state[0][0][0] == bottom or state[0][0][0] == top):
+        h += 1
+    if not (state[0][2][0] == bottom or state[0][2][0] == top):
+        h += 1
+    if not (state[0][0][2] == bottom or state[0][0][2] == top):
+        h += 1
+    if not (state[0][2][2] == bottom or state[0][2][2] == top):
+        h += 1
+    if not (state[5][0][0] == bottom or state[5][0][0] == top):
+        h += 1
+    if not (state[5][2][0] == bottom or state[5][2][0] == top):
+        h += 1
+    if not (state[5][0][2] == bottom or state[5][0][2] == top):
+        h += 1
+    if not (state[5][2][2] == bottom or state[5][2][2] == top):
+        h += 1
 
-    print("----------------- Commands ------------------")
-    print("1. Random Scramble")
-    print("2. Enter Moves")
-    print("3. Auto Solve")
-    print("4. Set Random Seed")
-    print("5. Remove Random Seed")
-    print()
-    print("H. Toggle Move Help")
-    print("T. Toggle Text Mode")
-    print("Q. Quit")
-    print("------------------ Before -------------------")
-    if is_text_mode:
-        old_node.cube.display_text()
-    else:
-        old_node.cube.display_colors()
-    print("------------------ After --------------------")
-    if is_text_mode:
-        node.cube.display_text()
-    else:
-        node.cube.display_colors()
-    print("------------------- Info --------------------")
+    # edge orientation
+    if not (state[0][0][1] == bottom or state[0][0][1] == top):
+        h += 1
+    if not (state[0][1][0] == bottom or state[0][1][0] == top):
+        h += 1
+    if not (state[0][1][2] == bottom or state[0][1][2] == top):
+        h += 1
+    if not (state[0][2][1] == bottom or state[0][2][1] == top):
+        h += 1
+    if not (state[5][0][1] == bottom or state[5][0][1] == top):
+        h += 1
+    if not (state[5][1][0] == bottom or state[5][1][0] == top):
+        h += 1
+    if not (state[5][1][2] == bottom or state[5][1][2] == top):
+        h += 1
+    if not (state[5][2][1] == bottom or state[5][2][1] == top):
+        h += 1
 
-    print("Random seed        : ", seed)
-    print("Current scramble   : ", " ".join(scramble_sequence))
-    print("Move History       : ", " ".join(user_moves))
-    print("Solution sequence  :  ", end="")
-    for idx, move in enumerate(solution_sequence):
-        if idx % 25 == 0 and idx > 0:
-            print()
-            print("                      ", end="")
-        print(move, end=" ")
-    print()
-    print("----------------- %.2f secs -----------------" % time_taken)
-    print("Enter move(s) or command : ", end="")
+    # middle edges orientation and middle layer
+    # if not (state[2][0][1] == right or state[2][0][1] == left):
+    #     h += 1
+    if not (state[2][1][0] == right or state[2][1][0] == left):
+        h += 1
+    if not (state[2][1][2] == right or state[2][1][2] == left):
+        h += 1
+    # if not (state[2][2][1] == right or state[2][2][1] == left):
+    #     h += 1
+    # if not (state[4][0][1] == right or state[4][0][1] == left):
+    #     h += 1
+    if not (state[4][1][0] == right or state[4][1][0] == left):
+        h += 1
+    if not (state[4][1][2] == right or state[4][1][2] == left):
+        h += 1
+    # if not (state[4][2][1] == right or state[4][2][1] == left):
+    #     h += 1
 
-
-solved_state_ints = string_to_state('0'+' 0'*8+" 3"*9+" 4"*9+" 1"*9+" 2"*9+" 5"*9)
-
-for i in range(6):
-    for j in range(3):
-        for k in range(3):
-            solved_state_ints[i][j][k] = int(solved_state_ints[i][j][k])
+    return h * 2
 
 
-def main():
-    """ The main function. Contains the menu loop.
-    """
-    start_state = solved_state_ints
-    scramble_sequence = []
-    user_moves = []
-    solution_sequence = []
-    seed = None
-    time_taken = 0.0
-    help_toggle = False
-    text_display_toggle = False
+def solve_kociemba(node):
+    g1_path = idas(node, h_g1)
+    node.cube = node.cube.execute_action_sequence(g1_path)
 
-    # gen root and set to start puzzle
-    solved_cube = Cube(start_state)
-    root = Node(solved_cube, None, None)
-    old_root = Node(solved_cube, None, None)
-
-    while True:
-        display_menu(old_root, root, scramble_sequence, user_moves, solution_sequence, time_taken,
-                     seed, help_toggle, text_display_toggle)
-        if seed is not None:
-            random.seed(int(seed))
-        else:
-            random.seed()
-
-        command = input()
-
-        if command == "h" or command == "H" or command == "help":
-            help_toggle = not help_toggle
-            continue
-
-        start_time = time.process_time()
-
-        if command == '1':
-            old_root = Node(solved_cube, None, None)
-            root.cube, scramble_sequence = Node(Cube(start_state), None, None).cube.scramble()
-            user_moves = []
-            solution_sequence = []
-        elif command == '2':
-            old_root = Node(root.cube, None, None)
-            print("Enter a space separated move sequence:  ", end="")
-            raw_sequence = input()
-            sequence = raw_sequence.split()
-            root.cube = root.cube.execute_action_sequence(sequence)
-            user_moves.extend(sequence)
-        elif command == '3':
-            old_root = Node(root.cube, None, None)
-            print("Solving...")
-            solution_sequence, root = solve(root)
-        elif command == '4':
-            print("Enter a seed integer:  ", end="")
-            seed = int(input())
-        elif command == '5':
-            seed = None
-        elif command == 'Q' or command == 'q':
-            exit()
-        elif command == 'T' or command == "t":
-            text_display_toggle = not text_display_toggle
-        command_list = command.split()
-        if set(command_list).issubset(set(ACTIONS_3x3)):
-            old_root = Node(root.cube, None, None)
-            root.cube = root.cube.execute_action_sequence(command_list)
-            user_moves.extend(command_list)
-
-        end_time = time.process_time()
-        time_taken = end_time - start_time
-
-
-if __name__ == '__main__':
-    main()
-    
-    # cProfile.run('main()', 'restats')
-    # p = pstats.Stats('restats')
-    # p.strip_dirs().sort_stats(SortKey.TIME).print_stats()
+    solve_path = g1_path
+    return solve_path, node
 

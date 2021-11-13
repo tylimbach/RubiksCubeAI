@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 
 ## [1.2.0]
+_This is the first stable release_
 The file layout has changed and so has the command to launch the application. Check the README.md to see updated guides or info.
 ### Added
 - Toggle command to display notation help for actions (moves)

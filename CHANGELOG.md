@@ -21,7 +21,6 @@ The file layout has changed and so has the command to launch the application. Ch
 - Track time each command takes (mostly for solves)
 - Track user's turn history
 
----
 ## [1.0.0]
 Major upgrades added to restructure the program and to make it user-friendly in the form of a terminal menu loop.
 ### Added
@@ -31,6 +30,7 @@ Major upgrades added to restructure the program and to make it user-friendly in 
   - Enter a sequence of strings to execute moves on the cube
   - Have the AI solve the cube
 
+---
 ## [0.6.0] 
 ### Added
 - README.md explaining project and instructions

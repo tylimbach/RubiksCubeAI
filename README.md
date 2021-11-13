@@ -64,7 +64,7 @@ None
 
 ## Roadmap
 - [x] Add a menu loop
-- [ ] Add a changelog
+- [x] Add a changelog
 - [ ] Improve F2L search heuristics
 - [ ] Implement Kociemba's Algorithm
 - [ ] Add a GUI

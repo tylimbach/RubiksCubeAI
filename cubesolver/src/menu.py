@@ -9,8 +9,8 @@ import os
 from cubesolver.src.actions import ACTIONS_3x3
 from cubesolver.src.cube import solved_state_ints
 from cubesolver.src.cube import Cube
-from cubesolver.src.algorithms import Node
-import cubesolver.src.algorithms as algorithms
+from cubesolver.src.solver import Node
+import cubesolver.src.solver as algorithms
 
 
 def clear():

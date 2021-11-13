@@ -1,5 +1,5 @@
 """
-algorithms.py
+solver.py
 Module related to solving algorithms and cube Node generation
 """
 

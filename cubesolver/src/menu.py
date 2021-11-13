@@ -1,6 +1,6 @@
 """
 menu.py
-Module for displaying menu loop and processing user input
+Module for I/O (a terminal menu application)
 """
 import random
 import time
@@ -18,6 +18,8 @@ def clear():
 
 
 def menu_loop():
+    """ Starts a menu loop that accepts commands and runs until the user quits
+    """
     start_state = solved_state_ints
     scramble_sequence = []
     user_moves = []
@@ -69,10 +71,10 @@ def menu_loop():
             seed = int(input())
         elif command == '5':
             seed = None
-        elif command == '6':
-            old_root = Node(root.cube, None, None)
-            print("Solving...")
-            solution_sequence, root = algorithms.solve_kociemba(root)
+        # elif command == '6':
+        #     old_root = Node(root.cube, None, None)
+        #     print("Solving...")
+        #     solution_sequence, root = algorithms.solve_kociemba(root)
         elif command == 'Q' or command == 'q':
             exit()
         elif command == 'T' or command == "t":
@@ -123,7 +125,7 @@ def display_menu(old_node, node, scramble_sequence="", user_moves="",
     print("3. CFOP Solve")
     print("4. Set Random Seed")
     print("5. Remove Random Seed")
-    print("6. Kociemba Solve")
+    # print("6. Kociemba Solve")
     print()
     print("H. Toggle Move Help")
     print("T. Toggle Text Mode")

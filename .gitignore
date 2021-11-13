@@ -134,3 +134,6 @@ scheduler.py
 
 # VSCode
 .vscode
+
+# PyCharm
+.idea

@@ -73,7 +73,7 @@ None
 - [ ] Add a GUI
 
 ## Long Term Goals
-I have some long-term goals that are very ambitious. These goals will be a significant undertaking and are much more complex or computationally expensive. When I get more time away from school I want to pursue.
+I have some long-term goals that are very ambitious. These goals will be a significant undertaking and are much more complex or computationally expensive.
 
 Long-term Goals:
 - Add support for alternate cube sizes (2x2, 4x4, 5x5, etc.)

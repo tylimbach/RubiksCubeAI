@@ -93,11 +93,13 @@ Potential Routes:
     - Utilize front-end tool stacks
     - Won't solve performance concerns
 - Port to a game engine
+    - Compiled   
     - Can utilize resources and tools the engine provides
     - Greatly simplifies the 3D graphics and animation
-- Use PyQt and OpenGL
+- PyQt and OpenGL
     - Little to refactor
-    - Slower and less native than compiled options
+    - Less performative than compiled options
+    - Less documentation and workflow resources
 
 ## Advice & Collaboration
 Feel free to email me at tylimbach@gmail if you have any advice or would like to aid in the project.

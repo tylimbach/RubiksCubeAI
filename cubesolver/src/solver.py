@@ -2,11 +2,14 @@
 solver.py
 Module related to solving algorithms and cube Node generation
 """
+import os.path
 
-from cubesolver.src.cube import Cube
-from cubesolver.src.cube import solved_state_ints
-from cubesolver.src.cube import ACTIONS_3x3
+from .cube import Cube
+from .cube import solved_state_ints
+from .cube import ACTIONS_3x3
 
+oll_file_path = os.path.join('cubesolver', 'resources', 'oll.txt')
+pll_file_path = os.path.join('cubesolver', 'resources', 'pll.txt')
 
 class Node:
     """ nodes holding a cube. used for expansion in search
@@ -565,7 +568,7 @@ def solve_oll(node):
     if goal_test_oll(node):
         return []
     try:
-        with open("cubesolver/resources/oll.txt", 'r') as f:
+        with open(oll_file_path, 'r') as f:
             lines = f.read().splitlines()
             for l in lines:
                 result = test_alg_oll(node, l.split())
@@ -641,7 +644,7 @@ def solve_pll(node):
     if goal_test_solved(node):
         return []
     try:
-        with open("cubesolver/resources/pll.txt", 'r') as f:
+        with open(pll_file_path, 'r') as f:
             lines = f.read().splitlines()
             # lines = [l.split(',') for l in lines]
             for line in lines:

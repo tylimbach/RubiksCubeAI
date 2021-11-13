@@ -6,11 +6,11 @@ import random
 import time
 import os
 
-from cubesolver.src.actions import ACTIONS_3x3
-from cubesolver.src.cube import solved_state_ints
-from cubesolver.src.cube import Cube
-from cubesolver.src.solver import Node
-import cubesolver.src.solver as algorithms
+from .actions import ACTIONS_3x3
+from .cube import solved_state_ints
+from .cube import Cube
+from .solver import Node
+from .solver import solve_cfop
 
 
 def clear():
@@ -65,7 +65,7 @@ def menu_loop():
         elif command == '3':
             old_root = Node(root.cube, None, None)
             print("Solving...")
-            solution_sequence, root = algorithms.solve_cfop(root)
+            solution_sequence, root = solve_cfop(root)
         elif command == '4':
             print("Enter a seed integer:  ", end="")
             seed = int(input())
@@ -74,7 +74,7 @@ def menu_loop():
         # elif command == '6':
         #     old_root = Node(root.cube, None, None)
         #     print("Solving...")
-        #     solution_sequence, root = algorithms.solve_kociemba(root)
+        #     solution_sequence, root = solve_kociemba(root)
         elif command == 'Q' or command == 'q':
             exit()
         elif command == 'T' or command == "t":

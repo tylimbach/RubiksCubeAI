@@ -31,7 +31,7 @@ The above moves are the normal moves in the clockwise direction. You can reverse
 The program provides simulation for all official moves, as well as their doubles and inverses.
 
 ## Visualizing the Cube
-The cube state is primarily displayed use xterm-256 color escape sequences. It is unfolded from the front face. The front face in this case is green.
+The cube state is primarily displayed use xterm-256 color escape sequences. It is unfolded from the front face. The front face in this case is blue.
 > Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
 Here is a solved cube before a scramble, and the new cube after the scramble:

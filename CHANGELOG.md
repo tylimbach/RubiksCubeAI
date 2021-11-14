@@ -13,13 +13,15 @@ _All notable changes will be found here_
 - Display additional tracked information like move history
 - CHANGLOG.md added to repo
 ### Changed
-- Restructured & Organized Files & Modules
+- Organized and restructured code into distinct modules
+- Imports and file paths are now relative
 - Main script is now `__main__.py`
 - Improved visual layout of terminal manu
 - README.md updated
 - .gitignore updated
 ### Fixed
 - Solve algorithm failing to find a solution for various PLL and OLL cases
+- File paths should work across different OS now
 
 # [1.0.0] (2021-10-26)
 ## Release Notes

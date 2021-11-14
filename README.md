@@ -17,8 +17,8 @@ the command: _python3 cubesolver_
 ```
 Alternatively, you can run the \_\_main\_\_.py script in cubesolver directly.
 
-## 3x3 Notation
-This project uses official rubik's cube notation to represent the cube, this is especially important to understand for turns and rotations. A detailed notation guide can be found here for reference:
+## 3x3 Notation Guide
+This project uses official WCA notation to represent the cube, this is especially important to understand for turns and rotations. A detailed notation guide can be found here for reference:
 
 [J Perm's Notation Guide](https://jperm.net/3x3/moves)
 
@@ -28,7 +28,7 @@ Here is a quick cheat sheet from J Perm's website:
 
 The above moves are the normal moves in the clockwise direction. You can reverse the direction of any move by appending a single quote ' to the letter. Reversed, or inverse moves, are counter-clockwise. Appending a 2 to the move just means do it twice in a row.
 
-The program provides simulation for all official moves: quarter and half face turns, slice turns, two layer (wide) turns and quarter cube rotations. This includes both primary and inverse moves (CW and CCW).
+The program provides simulation for all official moves, as well as their doubles and inverses.
 
 ## Visualizing the Cube
 The cube state is primarily displayed use xterm-256 color escape sequences. It is unfolded from the front face. The front face in this case is green.
@@ -48,20 +48,13 @@ Here is a solved cube displayed with numbers:
 ## CFOP Solving Algorithm
 The AI that solves the cube mimics the CFOP method that is used commonly in advanced speed-cubing. This method is a 4 step method represented by the name: Cross , F2L, OLL, PLL. 
 
-#### Cross
-Bottom 4 edges. Uses IDA* search.
-
-#### F2L (First 2 Layers)
-4 corner/edge pairs. Uses 4 IDA* searches.
-
-#### OLL (Orientation of Last Layer)
-Attempts algorithms read from oll.txt. The 57 algorithms cover all cases when positioned correctly.
-
-#### PLL (Permutation of Last Layer)
-Attempts algorithms read from pll.txt. The 21 algorithms cover all cases when positioned correctly.
+- The bottom cross is solved first using 1 IDA* search.
+- F2L (first 2 layer) is solved using 4 consecutive IDA* searches.
+- OLL (orient last layer) is solved by testing algorithms saved in oll.txt. These cover all OLL cases.
+- PLL (permute last layer) is solved by testing algorithms saved in pll.txt. These cover all PLL cases.
 
 ## Known Issues
-None
+- Occasionally, F2L can take awhile (10-15 seconds) in an unlucky case. Working to improve this.
 
 ## Roadmap
 - [x] Add a menu loop
@@ -70,7 +63,7 @@ None
 - [ ] Implement Kociemba's Algorithm
 - [ ] Add a GUI
 
-## Long Term Goals
+## Long Term Goals (future versions)
 
 - Add support for alternate cube sizes (2x2, 4x4, 5x5, etc.)
 - Live 3D simulation of the cube and turn animation

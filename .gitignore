@@ -137,3 +137,6 @@ scheduler.py
 
 # PyCharm
 .idea
+
+# MacOS
+.DS_Store

@@ -54,7 +54,7 @@ The AI that solves the cube mimics the CFOP method that is used commonly in adva
 - PLL (permute last layer) is solved by testing algorithms saved in pll.txt. These cover all PLL cases.
 
 ## Known Issues
-- Occasionally, F2L can take awhile (10-15 seconds) in an unlucky case. Working to improve this.
+- Occasionally, F2L can take awhile (10-15 seconds) in an unlucky case
 
 ## Roadmap
 - [x] Add a menu loop

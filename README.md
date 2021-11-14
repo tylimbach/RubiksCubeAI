@@ -15,7 +15,7 @@ the command: _python3 cubesolver_
 ```shell
 /rubiks-cube $ python3 cubesolver
 ```
-Alternatively, you can run the `__main__.py` script in cubesolver directly.
+Alternatively, you can run the \_\_main\_\_.py script in cubesolver directly.
 
 ## 3x3 Notation
 This project uses official rubik's cube notation to represent the cube, this is especially important to understand for turns and rotations. A detailed notation guide can be found here for reference:

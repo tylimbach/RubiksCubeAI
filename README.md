@@ -8,14 +8,14 @@ A terminal menu application that simulates a 3x3 rubik's cube written in Python.
 - Solve the cube using the most popular speedsolving method for humans: CFOP
 
 ## Installation & Running
-You must have Python 3 installed. The project was tested on Python 3.9.
+You must have Python 3 installed. The project was tested and developed using Python 3.9.
 
-Download the repository on GitHub. Navigate to project folder containing the README and rubikscube directory, start the script with
+Download the desired release's source code on GitHub. Navigate to top-level folder containing the README and the cubesolver directory, start the script with
 the command: _python3 cubesolver_
 ```shell
 /rubiks-cube $ python3 cubesolver
 ```
-Alternatively you can run `__main__.py` directly from within the `cubesolver` directory.
+Alternatively, you can run the `__main__.py` script in cubesolver directly.
 
 ## 3x3 Notation
 This project uses official rubik's cube notation to represent the cube, this is especially important to understand for turns and rotations. A detailed notation guide can be found here for reference:

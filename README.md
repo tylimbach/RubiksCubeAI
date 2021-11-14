@@ -32,12 +32,11 @@ The program provides simulation for all official moves, as well as their doubles
 
 ## Visualizing the Cube
 The cube state is primarily displayed use xterm-256 color escape sequences. It is unfolded from the front face. The front face in this case is blue.
-> Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
 Here is a solved cube before a scramble, and the new cube after the scramble:
 
 <img src="https://user-images.githubusercontent.com/63261198/141620907-188bdb3a-824e-4859-924f-80ed26da9f98.png" width="700" height="400">
-
+> Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
 Because some terminals do not support all the colors used, the current alternative method to display the cube is using numbers rather than colors. Numbers 1-6 represent colors.
 
@@ -70,7 +69,7 @@ The AI that solves the cube mimics the CFOP method that is used commonly in adva
 - Deploy as a web app
 
 Supporting larger cubes becomes much more complex not only to solve, but even operations such as turns or node creation
-become more expensive. I likely need to implement variants of Kociemba's algorithm in order to simulate larger cubes.
+become more expensive. I likely need to implement variants of Kociemba's algorithm in order find solutions for larger cubes.
 
 Eventually I will port to a compiled language like Java to improve performance and pursue these goals. These goals 
 will require a lot of refactoring regardless, so it would be a good idea to port beforehand.

@@ -1,4 +1,4 @@
-_All notable changes will be found here_
+_Notable changes between released versions will be found here._
 
 
 # [1.1.0] (2021-11-13)
@@ -40,7 +40,7 @@ _All notable changes will be found here_
 - README.md updated
 ---
 # Pre-release Notes
-The "versions" listed here are not tagged or released. This section is just a vague chronological record of major changes in very early development. The numbers aren't attached to specific commits and may never be. Eventually this section will likely be removed.
+> The "versions" listed here are not tagged or released. This section is just a vague chronological record of major changes in very early development. The numbers aren't attached to specific commits and may never be. Eventually this section will likely be removed, but currently it provides some value.
 ## [0.6.0] 
 ### Added
 - README.md explaining project and instructions

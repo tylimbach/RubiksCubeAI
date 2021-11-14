@@ -36,6 +36,7 @@ The cube state is primarily displayed use xterm-256 color escape sequences. It i
 Here is a solved cube before a scramble, and the new cube after the scramble:
 
 <img src="https://user-images.githubusercontent.com/63261198/141620907-188bdb3a-824e-4859-924f-80ed26da9f98.png" width="700" height="400">
+
 > Note: This is not compatible with some computer terminals, only terminals that support xterm-256
 
 Because some terminals do not support all the colors used, the current alternative method to display the cube is using numbers rather than colors. Numbers 1-6 represent colors.

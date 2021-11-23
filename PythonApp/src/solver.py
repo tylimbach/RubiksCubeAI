@@ -8,8 +8,8 @@ from .cube import Cube
 from .cube import solved_state_ints
 from .cube import ACTIONS_3x3
 
-oll_file_path = os.path.join('cubesolver', 'resources', 'oll.txt')
-pll_file_path = os.path.join('cubesolver', 'resources', 'pll.txt')
+oll_file_path = os.path.join('PythonApp', 'resources', 'oll.txt')
+pll_file_path = os.path.join('PythonApp', 'resources', 'pll.txt')
 
 class Node:
     """ nodes holding a cube. used for expansion in search

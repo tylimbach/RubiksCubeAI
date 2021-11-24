@@ -1,4 +1,10 @@
 # Rubiks Cube AI
+>I am in the process of porting to C# and expanding the functionality of the application.
+>
+>The PythonApp directory contains the original, fully functional Python version discussed in this README. The Python version can currently be found under my releases as well.
+>
+>The C#App directory contains the C# code being developed for the new version. Among other features, the C# version adds support for NxN cubes. This will be moved to it's own repository soon.
+
 A terminal menu application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
 
 - Creation of a solved 3x3 cube

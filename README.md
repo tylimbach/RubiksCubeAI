@@ -10,7 +10,7 @@ A terminal menu application that simulates a 3x3 rubik's cube written in Python.
 ## Installation & Running
 You must have Python 3 installed. The project was tested and developed using Python 3.9.
 
-Download the desired release's source code on GitHub. Navigate to top-level folder containing the README and the cubesolver directory, start the script with
+Download the desired release's source code on GitHub. Navigate to the PythonApp directory containing the README and the cubesolver directory, start the script with
 the command: _python3 cubesolver_
 ```shell
 /rubiks-cube $ python3 cubesolver

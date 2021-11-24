@@ -13,7 +13,7 @@ You must have Python 3 installed. The project was tested and developed using Pyt
 Download the desired release's source code on GitHub. Navigate to the PythonApp directory containing the README and the cubesolver directory, start the script with
 the command: _python3 cubesolver_
 ```shell
-/rubiks-cube $ python3 cubesolver
+$ python3 cubesolver
 ```
 Alternatively, you can run the \_\_main\_\_.py script in cubesolver directly.
 

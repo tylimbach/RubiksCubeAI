@@ -18,20 +18,30 @@ namespace CSharpApp
     /// <summary>
     /// Data structure representing an NxNxN Rubik's Cube.
     /// </summary>
-    public class Cube // : IDeepCloneable<Cube>
+    public class Cube : IDeepCloneable<Cube>
     {
         public static readonly char[] FaceLetters = {'U', 'L', 'F', 'R', 'B', 'D'};
-
         public const int FaceCount = 6;
+        
         public int Dimension;
-        public Color[,,] Tiles;
+        public Color[,] Up, Left, Front, Right, Back, Down; // Individual Face Arrays
+        public Color[][,] Tiles = new Color[FaceCount][,]; // 6 [Dimension x Dimension] arrays to represent faces 
 
         /// <summary>
         /// Create an uninitialized 3x3x3 Cube.
         /// </summary>
         private Cube()
         {
-            Tiles = new Color[FaceCount, 3, 3];
+            for (var i = 0; i < FaceCount; ++i)
+            {
+                Tiles[i] = new Color[3, 3];
+            }
+            Up = Tiles[0];
+            Left = Tiles[1];
+            Front = Tiles[2];
+            Right = Tiles[3];
+            Back = Tiles[4];
+            Down = Tiles[5];
         }
         
         /// <summary>
@@ -41,17 +51,23 @@ namespace CSharpApp
         public Cube(int dimension)
         {
             Dimension = dimension;
-            Tiles = new Color[FaceCount, dimension, dimension];
             for (var i=0; i < FaceCount; ++i)
             {
+                Tiles[i] = new Color[Dimension, Dimension];
                 for (var j=0; j < dimension; ++j)
                 {
                     for (var k=0; k < dimension; ++k)
                     {
-                        Tiles[i, j, k] = (Color) i;
+                        Tiles[i][j, k] = (Color) i;
                     }
                 }
             }
+            Up = Tiles[0];
+            Left = Tiles[1];
+            Front = Tiles[2];
+            Right = Tiles[3];
+            Back = Tiles[4];
+            Down = Tiles[5];
         }
 
         /// <summary>
@@ -84,22 +100,22 @@ namespace CSharpApp
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Front, offsetInv, i];
-                            Tiles[(int) Face.Front, offsetInv, i] = Tiles[(int) Face.Left, offsetInv, i];
-                            Tiles[(int) Face.Left, offsetInv, i] = Tiles[(int) Face.Back, offsetInv, i];
-                            Tiles[(int) Face.Back, offsetInv, i] = Tiles[(int) Face.Right, offsetInv, i];
-                            Tiles[(int) Face.Right, offsetInv, i] = temp;
+                            var temp = Front[offsetInv, i];
+                            Front[offsetInv, i] = Left[offsetInv, i];
+                            Left[offsetInv, i] = Back[offsetInv, i];
+                            Back[offsetInv, i] = Right[offsetInv, i];
+                            Right[offsetInv, i] = temp;
                         }
                     }
                     else
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Front, offsetInv, i];
-                            Tiles[(int) Face.Front, offsetInv, i] = Tiles[(int) Face.Right, offsetInv, i];
-                            Tiles[(int) Face.Right, offsetInv, i] = Tiles[(int) Face.Back, offsetInv, i];
-                            Tiles[(int) Face.Back, offsetInv, i] = Tiles[(int) Face.Left, offsetInv, i];
-                            Tiles[(int) Face.Left, offsetInv, i] = temp;
+                            var temp = Front[offsetInv, i];
+                            Front[offsetInv, i] = Right[offsetInv, i];
+                            Right[offsetInv, i] = Back[offsetInv, i];
+                            Back[offsetInv, i] = Left[offsetInv, i];
+                            Left[offsetInv, i] = temp;
                         }
                     }
                     break;
@@ -109,22 +125,22 @@ namespace CSharpApp
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Down, offset, i];
-                            Tiles[(int) Face.Down, offset, i] = Tiles[(int) Face.Right, Dimension - i - 1, offset];
-                            Tiles[(int) Face.Right, Dimension - i - 1, offset] = Tiles[(int) Face.Up, offsetInv, Dimension - i - 1];
-                            Tiles[(int) Face.Up, offsetInv, Dimension - i - 1] = Tiles[(int) Face.Left, i, offsetInv];
-                            Tiles[(int) Face.Left, i, offsetInv] = temp;
+                            var temp = Down[offset, i];
+                            Down[offset, i] = Right[Dimension - i - 1, offset];
+                            Right[Dimension - i - 1, offset] = Up[offsetInv, Dimension - i - 1];
+                            Up[offsetInv, Dimension - i - 1] = Left[i, offsetInv];
+                            Left[i, offsetInv] = temp;
                         }
                     }
                     else
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Down, offset, i];
-                            Tiles[(int) Face.Down, offset, i] = Tiles[(int) Face.Left, i, offsetInv];
-                            Tiles[(int) Face.Left, i, offsetInv] = Tiles[(int) Face.Up, offsetInv, Dimension - i - 1];
-                            Tiles[(int) Face.Up, offsetInv, Dimension - i - 1] = Tiles[(int) Face.Right, Dimension - i - 1, offset];
-                            Tiles[(int) Face.Right, Dimension - i - 1, offset] = temp;
+                            var temp = Down[offset, i];
+                            Down[offset, i] = Left[i, offsetInv];
+                            Left[i, offsetInv] = Up[offsetInv, Dimension - i - 1];
+                            Up[offsetInv, Dimension - i - 1] = Right[Dimension - i - 1, offset];
+                            Right[Dimension - i - 1, offset] = temp;
                         }
                     }
                     break;
@@ -134,22 +150,22 @@ namespace CSharpApp
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Down, i, offsetInv];
-                            Tiles[(int) Face.Down, i, offsetInv] = Tiles[(int) Face.Back, Dimension - i - 1, offset];
-                            Tiles[(int) Face.Back, Dimension - i - 1, offset] = Tiles[(int) Face.Up, i, offsetInv];
-                            Tiles[(int) Face.Up, i, offsetInv] = Tiles[(int) Face.Front, i, offsetInv];
-                            Tiles[(int) Face.Front, i, offsetInv] = temp;
+                            var temp = Down[i, offsetInv];
+                            Down[i, offsetInv] = Back[Dimension - i - 1, offset];
+                            Back[Dimension - i - 1, offset] = Up[i, offsetInv];
+                            Up[i, offsetInv] = Front[i, offsetInv];
+                            Front[i, offsetInv] = temp;
                         }
                     }
                     else
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Down, i, offsetInv];
-                            Tiles[(int) Face.Down, i, offsetInv] = Tiles[(int) Face.Front, i, offsetInv];
-                            Tiles[(int) Face.Front, i, offsetInv] = Tiles[(int) Face.Up, i, offsetInv];
-                            Tiles[(int) Face.Up, i, offsetInv] = Tiles[(int) Face.Back, Dimension - i - 1, offset];
-                            Tiles[(int) Face.Back, Dimension - i - 1, offset] = temp;
+                            var temp = Down[i, offsetInv];
+                            Down[i, offsetInv] = Front[i, offsetInv];
+                            Front[i, offsetInv] = Up[i, offsetInv];
+                            Up[i, offsetInv] = Back[Dimension - i - 1, offset];
+                            Back[Dimension - i - 1, offset] = temp;
                         }
                     }
                     break;
@@ -159,22 +175,22 @@ namespace CSharpApp
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Down, offsetInv, i];
-                            Tiles[(int) Face.Down, offsetInv, i] = Tiles[(int) Face.Left, i, offset];
-                            Tiles[(int) Face.Left, i, offset] = Tiles[(int) Face.Up, offset, Dimension - i - 1];
-                            Tiles[(int) Face.Up, offset, Dimension - i - 1] = Tiles[(int) Face.Right, Dimension - i - 1, offsetInv];
-                            Tiles[(int) Face.Right, Dimension - i - 1, offsetInv] = temp;
+                            var temp = Down[offsetInv, i];
+                            Down[offsetInv, i] = Left[i, offset];
+                            Left[i, offset] = Up[offset, Dimension - i - 1];
+                            Up[offset, Dimension - i - 1] = Right[Dimension - i - 1, offsetInv];
+                            Right[Dimension - i - 1, offsetInv] = temp;
                         }
                     }
                     else
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Down, offsetInv, i];
-                            Tiles[(int) Face.Down, offsetInv, i] = Tiles[(int) Face.Right, Dimension - i - 1, offsetInv];
-                            Tiles[(int) Face.Right, Dimension - i - 1, offsetInv] = Tiles[(int) Face.Up, offset, Dimension - i - 1];
-                            Tiles[(int) Face.Up, offset, Dimension - i - 1] = Tiles[(int) Face.Left, i, offset];
-                            Tiles[(int) Face.Left, i, offset] = temp;
+                            var temp = Down[offsetInv, i];
+                            Down[offsetInv, i] = Right[Dimension - i - 1, offsetInv];
+                            Right[Dimension - i - 1, offsetInv] = Up[offset, Dimension - i - 1];
+                            Up[offset, Dimension - i - 1] = Left[i, offset];
+                            Left[i, offset] = temp;
                         }
                     }
                     break;
@@ -184,22 +200,22 @@ namespace CSharpApp
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Down, i, offset];
-                            Tiles[(int) Face.Down, i, offset] = Tiles[(int) Face.Front, i, offset];
-                            Tiles[(int) Face.Front, i, offset] = Tiles[(int) Face.Up, i, offset];
-                            Tiles[(int) Face.Up, i, offset] = Tiles[(int) Face.Back, Dimension - i - 1, offsetInv];
-                            Tiles[(int) Face.Back, Dimension - i - 1, offsetInv] = temp;
+                            var temp = Down[i, offset];
+                            Down[i, offset] = Front[i, offset];
+                            Front[i, offset] = Up[i, offset];
+                            Up[i, offset] = Back[Dimension - i - 1, offsetInv];
+                            Back[Dimension - i - 1, offsetInv] = temp;
                         }
                     }
                     else
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Down, i, offset];
-                            Tiles[(int) Face.Down, i, offset] = Tiles[(int) Face.Back, Dimension - i - 1, offsetInv];
-                            Tiles[(int) Face.Back, Dimension - i - 1, offsetInv] = Tiles[(int) Face.Up, i, offset];
-                            Tiles[(int) Face.Up, i, offset] = Tiles[(int) Face.Front, i, offset];
-                            Tiles[(int) Face.Front, i, offset] = temp;
+                            var temp = Down[i, offset];
+                            Down[i, offset] = Back[Dimension - i - 1, offsetInv];
+                            Back[Dimension - i - 1, offsetInv] = Up[i, offset];
+                            Up[i, offset] = Front[i, offset];
+                            Front[i, offset] = temp;
                         }
                     }
                     break;
@@ -209,22 +225,22 @@ namespace CSharpApp
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Front, offset, i];
-                            Tiles[(int) Face.Front, offset, i] = Tiles[(int) Face.Right, offset, i];
-                            Tiles[(int) Face.Right, offset, i] = Tiles[(int) Face.Back, offset, i];
-                            Tiles[(int) Face.Back, offset, i] = Tiles[(int) Face.Left, offset, i];
-                            Tiles[(int) Face.Left, offset, i] = temp;
+                            var temp = Front[offset, i];
+                            Front[offset, i] = Right[offset, i];
+                            Right[offset, i] = Back[offset, i];
+                            Back[offset, i] = Left[offset, i];
+                            Left[offset, i] = temp;
                         }
                     }
                     else
                     {
                         for (int i = 0; i < Dimension; ++i)
                         {
-                            var temp = Tiles[(int) Face.Front, offset, i];
-                            Tiles[(int) Face.Front, offset, i] = Tiles[(int) Face.Left, offset, i];
-                            Tiles[(int) Face.Left, offset, i] = Tiles[(int) Face.Back, offset, i];
-                            Tiles[(int) Face.Back, offset, i] = Tiles[(int) Face.Right, offset, i];
-                            Tiles[(int) Face.Right, offset, i] = temp;
+                            var temp = Front[offset, i];
+                            Front[offset, i] = Left[offset, i];
+                            Left[offset, i] = Back[offset, i];
+                            Back[offset, i] = Right[offset, i];
+                            Right[offset, i] = temp;
                         }
                     }
                     break;
@@ -280,25 +296,22 @@ namespace CSharpApp
         {
             int f = (int)face;
             
-            // Construct a new Cube
-            var result = new Color[FaceCount, Dimension, Dimension];
-            for (int i = 0; i < FaceCount; ++i)
+            // Construct a copy of the face to rotate
+            var result = new Color[Dimension, Dimension];
+            for (int j = 0; j < Dimension; ++j)
             {
-                for (int j = 0; j < Dimension; ++j)
+                for (int k = 0; k < Dimension; ++k)
                 {
-                    for (int k = 0; k < Dimension; ++k)
-                    {
-                        result[i, j, k] = Tiles[i, j, k];
-                    }
+                    result[j, k] = Tiles[f][j, k];
                 }
             }
-            
+
             // Transpose
             for (int i = 0; i < Dimension; ++i)
             {
                 for (int j = 0; j < Dimension; ++j)
                 {
-                    result[f, j, i] = Tiles[f, i, j];
+                    result[j, i] = Tiles[f][i, j];
                 }
             }
 
@@ -309,8 +322,8 @@ namespace CSharpApp
                 {
                     for (int j = 0; j < Dimension / 2; ++j)
                     {
-                        (result[f, i, j], result[f, i, Dimension - j - 1]) = 
-                            (result[f, i, Dimension - j - 1], result[f, i, j]);
+                        (result[i, j], result[i, Dimension - j - 1]) = 
+                            (result[i, Dimension - j - 1], result[i, j]);
                     }
                 }
             }
@@ -321,13 +334,13 @@ namespace CSharpApp
                 {
                     for (int j = 0; j < Dimension / 2; ++j)
                     {
-                        (result[f, j, i], result[f, Dimension - j - 1, i]) = 
-                            (result[f, Dimension - j - 1, i], result[f, j, i]);
+                        (result[j, i], result[Dimension - j - 1, i]) = 
+                            (result[Dimension - j - 1, i], result[j, i]);
                     }
                 }
             }
 
-            Tiles = result;
+            Tiles[f] = result;
         }
 
         readonly ConsoleColor[] _consoleColors = {ConsoleColor.White, ConsoleColor.Red, ConsoleColor.Blue, ConsoleColor.Magenta, 
@@ -358,7 +371,7 @@ namespace CSharpApp
                 }
                 for (var k=0; k < Dimension; ++k)
                 {
-                    PrintColoredSquare(Tiles[0, j, k]);
+                    PrintColoredSquare(Tiles[0][j, k]);
                     Console.Write(" ");
                 }
                 Console.WriteLine();
@@ -371,7 +384,7 @@ namespace CSharpApp
                 {
                     for (var k=0; k < Dimension; ++k)
                     {
-                        PrintColoredSquare(Tiles[i, j, k]);
+                        PrintColoredSquare(Tiles[i][j, k]);
                         Console.Write(" ");
                     }
                     Console.ResetColor();
@@ -390,7 +403,7 @@ namespace CSharpApp
                 }
                 for (var k=0; k < Dimension; ++k)
                 {
-                    PrintColoredSquare(Tiles[5, j, k]);
+                    PrintColoredSquare(Tiles[5][j, k]);
                     Console.Write(" ");
                 }
                 Console.ResetColor();
@@ -399,40 +412,41 @@ namespace CSharpApp
             Console.WriteLine();
         }
         
-        // object IDeepCloneable.DeepClone()
-        // {
-        //     return DeepClone();
-        // }
+        object IDeepCloneable.DeepClone()
+        {
+            return DeepClone();
+        }
         
-        // public Cube DeepClone()
-        // {
-        //     var copiedTiles = new Color[Dimension, Dimension, Dimension];
-        //     for (var i=0; i < FaceCount; ++i)
-        //     {
-        //         for (var j=0; j < Dimension; ++j)
-        //         {
-        //             for (var k=0; k < Dimension; ++k)
-        //             {
-        //                 copiedTiles[i, j, k] = Tiles[i, j, k];
-        //             }
-        //         }
-        //     }
-        //     var copiedCube = new Cube
-        //     {
-        //         Tiles = copiedTiles,
-        //         Dimension = Dimension
-        //     };
-        //     return copiedCube;
-        // }
+        public Cube DeepClone()
+        {
+            var copiedTiles = new Color[FaceCount][,];
+            for (var i=0; i < FaceCount; ++i)
+            {
+                copiedTiles[i] = new Color[Dimension, Dimension];
+                for (var j=0; j < Dimension; ++j)
+                {
+                    for (var k=0; k < Dimension; ++k)
+                    {
+                        copiedTiles[i][j, k] = Tiles[i][j, k];
+                    }
+                }
+            }
+            var copiedCube = new Cube
+            {
+                Tiles = copiedTiles,
+                Dimension = Dimension
+            };
+            return copiedCube;
+        }
     }
     
-    // public interface IDeepCloneable
-    // {
-    //     object DeepClone();
-    // }
-    //
-    // public interface IDeepCloneable<T> : IDeepCloneable
-    // {
-    //     new T DeepClone();
-    // }
+    public interface IDeepCloneable
+    {
+        object DeepClone();
+    }
+    
+    public interface IDeepCloneable<T> : IDeepCloneable
+    {
+        new T DeepClone();
+    }
 }

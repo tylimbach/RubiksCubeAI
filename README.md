@@ -1,17 +1,28 @@
-# Rubiks Cube AI
->I am in the process of porting to C# and expanding the functionality of the application.
->
->The PythonApp directory contains the original, fully functional Python version discussed in this README. The Python version can currently be found under my releases as well.
->
->The C#App directory contains the C# code being developed for the new version. Among other features, the C# version adds support for NxN cubes. This will be moved to it's own repository soon.
+> Note for employers and viewers: If you want to see my best code, check the C# code in this repository, as that is the future of the project. That code is more recent and a better demo of my work, than the original Python code.
+> 
+> However, if you want to test out the program I highly recommend using the Python version and it's instructions below until I get the time to finish porting and documenting the C# version. The C# version is not quite useable yet.
 
-A terminal menu application that simulates a 3x3 rubik's cube written in Python. It supports multiple operations.
+# Rubiks Cube AI
+A terminal menu application that simulates a 3x3 rubik's cube. Originally written in Python. Some of the functionality is listed below.
 
 - Creation of a solved 3x3 cube
 - Simulate turns or rotations
 - Execution of random 25 move scrambles
 - Display the cube state as a 2D unfolded cube in terminal (with colors)
 - Solve the cube using the most popular speedsolving method for humans: CFOP
+
+> Note: I have begun the process of porting to C# for learning purposes, refactoring, and adding features. This is described below. These files are meant more for viewing than use currently, as the program's menu and README documentation is not quite useable yet.
+
+The C# files included in this repository are a W.I.P., porting over from Python and adding additional features such as NxN dimensional cubes. Currently, the C# version supports the following operations.
+
+- Creation of an NxN solved cube
+- Scramble any cube, using an algorithm that scales with the cube's size
+- Simulate the turning of any layer in either direction, using user input
+- Display the cube state as a 2D unfolded cube in terminal (with colors)
+
+_No support for an AI solver has been added yet to the C# version_
+
+_The menu doesn't have prompts and documentation configured yet_
 
 ## Installation & Running
 You must have Python 3 installed. The project was tested and developed using Python 3.9.

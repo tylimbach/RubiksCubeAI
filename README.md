@@ -1,7 +1,3 @@
-> Note for employers and viewers: If you want to see my best code, check the C# code in this repository, as that is the future of the project. That code is more recent and a better demo of my work, than the original Python code.
-> 
-> However, if you want to test out the program I highly recommend using the Python version and it's instructions below until I get the time to finish porting and documenting the C# version. The C# version is not quite useable yet.
-
 # Rubiks Cube AI
 A terminal menu application that simulates a 3x3 rubik's cube. Originally written in Python. Some of the functionality is listed below.
 

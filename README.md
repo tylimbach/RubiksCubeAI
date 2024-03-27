@@ -33,13 +33,9 @@ Alternatively, you can run the \_\_main\_\_.py script in cubesolver directly.
 ## 3x3 Notation Guide
 This project uses official WCA notation to represent the cube, this is especially important to understand for turns and rotations. A detailed notation guide can be found here for reference:
 
-[J Perm's Notation Guide](https://jperm.net/3x3/moves)
+[Cube Notation Guide](https://solvethecube.com/notation))
 
-Here is a quick cheat sheet from J Perm's website:
-
-<img src="https://jperm.net/images/notation.png" width="700" height="350">
-
-The above moves are the normal moves in the clockwise direction. You can reverse the direction of any move by appending a single quote ' to the letter. Reversed, or inverse moves, are counter-clockwise. Appending a 2 to the move just means do it twice in a row.
+Letters are normal moves in the clockwise direction. You can reverse the direction of any move by appending a single quote ' to the letter. Reversed, or inverse moves, are counter-clockwise. Appending a 2 to the move just means do it twice in a row.
 
 The program provides simulation for all official moves, as well as their doubles and inverses.
 
@@ -69,14 +65,7 @@ The AI that solves the cube mimics the CFOP method that is used commonly in adva
 ## Known Issues
 - Occasionally, F2L can take awhile (10-15 seconds) in an unlucky case
 
-## Roadmap
-- [x] Add a menu loop
-- [x] Add a changelog
-- [ ] Improve F2L search heuristics
-- [ ] Implement Kociemba's Algorithm
-- [ ] Add a GUI
-
-## Long Term Goals (future versions)
+## Aspirational Goals
 
 - Add support for alternate cube sizes (2x2, 4x4, 5x5, etc.)
 - Live 3D simulation of the cube and turn animation
